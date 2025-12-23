@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Thermometer,
   Droplets,
@@ -9,27 +9,34 @@ import {
   Trash2,
   RefreshCw,
   X,
-} from 'lucide-react';
-import { thresholdService, Threshold } from '../../services/threshold.service';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { thresholdService, Threshold } from "../../services/threshold.service";
+import { toast } from "sonner";
 
-const SENSOR_CONFIG: Record<string, { displayName: string; icon: any; unit: string }> = {
-  temperature: { displayName: 'Nhiệt độ', icon: Thermometer, unit: '°C' },
-  humidity: { displayName: 'Độ ẩm không khí', icon: Droplets, unit: '%' },
-  soil_moisture: { displayName: 'Độ ẩm đất', icon: Sprout, unit: '%' },
-  water_level: { displayName: 'Mực nước', icon: Waves, unit: '%' },
-  light: { displayName: 'Ánh sáng', icon: Sun, unit: 'lux' },
+const SENSOR_CONFIG: Record<
+  string,
+  { displayName: string; icon: any; unit: string }
+> = {
+  temperature: { displayName: "Nhiệt độ", icon: Thermometer, unit: "°C" },
+  humidity: { displayName: "Độ ẩm không khí", icon: Droplets, unit: "%" },
+  soil_moisture: { displayName: "Độ ẩm đất", icon: Sprout, unit: "%" },
+  water_level: { displayName: "Mực nước", icon: Waves, unit: "%" },
+  light: { displayName: "Ánh sáng", icon: Sun, unit: "%" },
 };
 
 interface ThresholdSettingsScreenProps {
   onBack: () => void;
 }
 
-export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScreenProps) {
+export default function ThresholdSettingsScreen({
+  onBack,
+}: ThresholdSettingsScreenProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [selectedThreshold, setSelectedThreshold] = useState<Threshold | null>(null);
+  const [selectedThreshold, setSelectedThreshold] = useState<Threshold | null>(
+    null
+  );
   const [thresholds, setThresholds] = useState<Threshold[]>([]);
 
   const fetchThresholds = async () => {
@@ -38,8 +45,11 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
       const data = await thresholdService.getAll();
       setThresholds(data);
     } catch (error: any) {
-      console.error('Error fetching thresholds:', error);
-      toast.error('Không thể tải cài đặt ngưỡng: ' + (error.response?.data?.message || error.message));
+      console.error("Error fetching thresholds:", error);
+      toast.error(
+        "Không thể tải cài đặt ngưỡng: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -67,60 +77,72 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
         severity: selectedThreshold.severity,
         isActive: selectedThreshold.isActive,
       });
-      toast.success('Cập nhật ngưỡng thành công');
+      toast.success("Cập nhật ngưỡng thành công");
       setShowEditDialog(false);
       setSelectedThreshold(null);
       fetchThresholds();
     } catch (error: any) {
-      toast.error('Không thể cập nhật ngưỡng: ' + (error.response?.data?.message || error.message));
+      toast.error(
+        "Không thể cập nhật ngưỡng: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
   const deleteThreshold = async (sensorType: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa cài đặt ngưỡng này?')) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa cài đặt ngưỡng này?")) {
       try {
         await thresholdService.delete(sensorType);
-        toast.success('Đã xóa ngưỡng');
+        toast.success("Đã xóa ngưỡng");
         fetchThresholds();
       } catch (error: any) {
-        toast.error('Không thể xóa ngưỡng: ' + (error.response?.data?.message || error.message));
+        toast.error(
+          "Không thể xóa ngưỡng: " +
+            (error.response?.data?.message || error.message)
+        );
       }
     }
   };
 
-  const toggleThreshold = async (sensorType: string, currentStatus: boolean) => {
+  const toggleThreshold = async (
+    sensorType: string,
+    currentStatus: boolean
+  ) => {
     try {
       await thresholdService.toggle(sensorType, !currentStatus);
-      toast.success('Đã cập nhật trạng thái ngưỡng');
+      toast.success("Đã cập nhật trạng thái ngưỡng");
       fetchThresholds();
     } catch (error: any) {
-      toast.error('Không thể cập nhật trạng thái: ' + (error.response?.data?.message || error.message));
+      toast.error(
+        "Không thể cập nhật trạng thái: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
   const getSeverityColor = (severity: string) => {
     const colors = {
-      info: 'bg-blue-100 text-blue-700',
-      warning: 'bg-orange-100 text-orange-700',
-      error: 'bg-red-100 text-red-700',
+      info: "bg-blue-100 text-blue-700",
+      warning: "bg-orange-100 text-orange-700",
+      error: "bg-red-100 text-red-700",
     };
     return colors[severity as keyof typeof colors];
   };
 
   const getSeverityLabel = (severity: string) => {
     const labels = {
-      info: 'Thông tin',
-      warning: 'Cảnh báo',
-      error: 'Nghiêm trọng',
+      info: "Thông tin",
+      warning: "Cảnh báo",
+      error: "Nghiêm trọng",
     };
     return labels[severity as keyof typeof labels];
   };
 
   const getAlertTypeLabel = (alertType: string) => {
     const labels = {
-      low: 'Thấp',
-      high: 'Cao',
-      both: 'Cả hai',
+      low: "Thấp",
+      high: "Cao",
+      both: "Cả hai",
     };
     return labels[alertType as keyof typeof labels];
   };
@@ -132,14 +154,18 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-gray-900 mb-1">Cài đặt ngưỡng</h1>
-            <p className="text-gray-500">Cấu hình ngưỡng cảnh báo cho cảm biến</p>
+            <p className="text-gray-500">
+              Cấu hình ngưỡng cảnh báo cho cảm biến
+            </p>
           </div>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
             className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
           >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+            />
             <span>Làm mới</span>
           </button>
         </div>
@@ -164,36 +190,44 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
               <div
                 key={threshold.sensorType}
                 className={`bg-white rounded-xl shadow-sm border-2 ${
-                  threshold.isActive ? 'border-green-200' : 'border-gray-200'
+                  threshold.isActive ? "border-green-200" : "border-gray-200"
                 } p-6`}
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-4">
                     <div
                       className={`p-4 rounded-xl ${
-                        threshold.isActive ? 'bg-green-50' : 'bg-gray-50'
+                        threshold.isActive ? "bg-green-50" : "bg-gray-50"
                       }`}
                     >
                       <Icon
                         className={`w-8 h-8 ${
-                          threshold.isActive ? 'text-green-600' : 'text-gray-400'
+                          threshold.isActive
+                            ? "text-green-600"
+                            : "text-gray-400"
                         }`}
                       />
                     </div>
                     <div>
-                      <h3 className="text-gray-900 font-medium text-lg mb-2">{config.displayName}</h3>
+                      <h3 className="text-gray-900 font-medium text-lg mb-2">
+                        {config.displayName}
+                      </h3>
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${getSeverityColor(threshold.severity)}`}>
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full font-medium ${getSeverityColor(
+                            threshold.severity
+                          )}`}
+                        >
                           {getSeverityLabel(threshold.severity)}
                         </span>
                         <span
                           className={`text-xs px-3 py-1 rounded-full font-medium ${
                             threshold.isActive
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-600'
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
                           }`}
                         >
-                          {threshold.isActive ? 'Đang bật' : 'Tắt'}
+                          {threshold.isActive ? "Đang bật" : "Tắt"}
                         </span>
                       </div>
                     </div>
@@ -202,37 +236,49 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
 
                 <div className="grid grid-cols-4 gap-6 mb-6 p-4 bg-gray-50 rounded-xl">
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Ngưỡng tối thiểu</div>
+                    <div className="text-sm text-gray-500 mb-1">
+                      Ngưỡng tối thiểu
+                    </div>
                     <div className="text-gray-900 font-bold text-lg">
                       {threshold.minValue} {config.unit}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Ngưỡng tối đa</div>
+                    <div className="text-sm text-gray-500 mb-1">
+                      Ngưỡng tối đa
+                    </div>
                     <div className="text-gray-900 font-bold text-lg">
                       {threshold.maxValue} {config.unit}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Kiểu cảnh báo</div>
-                    <div className="text-gray-900 font-medium">{getAlertTypeLabel(threshold.alertType)}</div>
+                    <div className="text-sm text-gray-500 mb-1">
+                      Kiểu cảnh báo
+                    </div>
+                    <div className="text-gray-900 font-medium">
+                      {getAlertTypeLabel(threshold.alertType)}
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Mức độ</div>
-                    <div className="text-gray-900 font-medium">{getSeverityLabel(threshold.severity)}</div>
+                    <div className="text-gray-900 font-medium">
+                      {getSeverityLabel(threshold.severity)}
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => toggleThreshold(threshold.sensorType, threshold.isActive)}
+                    onClick={() =>
+                      toggleThreshold(threshold.sensorType, threshold.isActive)
+                    }
                     className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
                       threshold.isActive
-                        ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-                        : 'bg-green-50 text-green-600 hover:bg-green-100'
+                        ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                        : "bg-green-50 text-green-600 hover:bg-green-100"
                     }`}
                   >
-                    {threshold.isActive ? 'Tắt' : 'Bật'}
+                    {threshold.isActive ? "Tắt" : "Bật"}
                   </button>
                   <button
                     onClick={() => {
@@ -264,38 +310,53 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h2>Chỉnh sửa ngưỡng</h2>
-              <button onClick={() => setShowEditDialog(false)} className="p-1 hover:bg-gray-100 rounded">
+              <button
+                onClick={() => setShowEditDialog(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-700 mb-2">Ngưỡng tối thiểu</label>
+                <label className="block text-gray-700 mb-2">
+                  Ngưỡng tối thiểu
+                </label>
                 <input
                   type="number"
                   value={selectedThreshold.minValue}
                   onChange={(e) =>
-                    setSelectedThreshold({ ...selectedThreshold, minValue: parseFloat(e.target.value) })
+                    setSelectedThreshold({
+                      ...selectedThreshold,
+                      minValue: parseFloat(e.target.value),
+                    })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Ngưỡng tối đa</label>
+                <label className="block text-gray-700 mb-2">
+                  Ngưỡng tối đa
+                </label>
                 <input
                   type="number"
                   value={selectedThreshold.maxValue}
                   onChange={(e) =>
-                    setSelectedThreshold({ ...selectedThreshold, maxValue: parseFloat(e.target.value) })
+                    setSelectedThreshold({
+                      ...selectedThreshold,
+                      maxValue: parseFloat(e.target.value),
+                    })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Kiểu cảnh báo</label>
+                <label className="block text-gray-700 mb-2">
+                  Kiểu cảnh báo
+                </label>
                 <select
                   value={selectedThreshold.alertType}
                   onChange={(e) =>
@@ -313,7 +374,9 @@ export default function ThresholdSettingsScreen({ onBack }: ThresholdSettingsScr
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Mức độ cảnh báo</label>
+                <label className="block text-gray-700 mb-2">
+                  Mức độ cảnh báo
+                </label>
                 <select
                   value={selectedThreshold.severity}
                   onChange={(e) =>

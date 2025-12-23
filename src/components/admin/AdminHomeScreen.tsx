@@ -165,7 +165,6 @@ export default function AdminHomeScreen() {
     if (diffHours < 24) return `${diffHours} giờ trước`;
     return `${diffDays} ngày trước`;
   };
-
   return (
     <div className="h-full">
       {/* Header */}
@@ -301,7 +300,7 @@ export default function AdminHomeScreen() {
                 value:
                   loading || stats.light === undefined || stats.light === null
                     ? "..."
-                    : `${Math.round(Number(stats.light))} lux`,
+                    : `${Number(stats.light).toFixed(1)}%`,
                 icon: Sun,
                 color: "yellow",
               },
