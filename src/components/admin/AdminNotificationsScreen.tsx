@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  Filter,
-  RefreshCw,
-} from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw, Plus, X } from 'lucide-react';
 import { alertService, Alert } from '../../services/alert.service';
 import { toast } from 'sonner';
 
 export default function AdminNotificationsScreen() {
-  const [filter, setFilter] = useState<'all' | 'unresolved'>('all');
+  const [filter, setFilter] = useState('all' as 'all' | 'unresolved');
+  const [severityFilter, setSeverityFilter] = useState('all' as 'all' | 'critical' | 'warning' | 'info');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [notifications, setNotifications] = useState<Alert[]>([]);
+  const [notifications, setNotifications] = useState([] as Alert[]);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newAlert, setNewAlert] = useState({
+    title: '',
+    message: '',
+    severity: 'info' as 'info' | 'warning' | 'critical',
+    type: 'manual_notice',
+    targetAll: true,
+    data: {},
+  });
 
   const fetchAlerts = async () => {
     try {
@@ -22,6 +26,9 @@ export default function AdminNotificationsScreen() {
       const params: any = { limit: 100 };
       if (filter === 'unresolved') {
         params.status = 'active';
+      }
+      if (severityFilter !== 'all') {
+        params.severity = severityFilter;
       }
       const response = await alertService.getAll(params);
       setNotifications(response.data);
@@ -36,19 +43,7 @@ export default function AdminNotificationsScreen() {
 
   useEffect(() => {
     fetchAlerts();
-  }, [filter]);
-
-  const handleMarkAsRead = async (id: string) => {
-    try {
-      await alertService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-      );
-      toast.success('Đã đánh dấu đã đọc');
-    } catch (error: any) {
-      toast.error('Không thể đánh dấu đã đọc: ' + (error.response?.data?.message || error.message));
-    }
-  };
+  }, [filter, severityFilter]);
 
   const handleResolve = async (id: string) => {
     try {
@@ -72,12 +67,35 @@ export default function AdminNotificationsScreen() {
     }
   };
 
-  const filteredNotifications = notifications.filter((n) =>
-    filter === 'all' ? true : n.status === 'active'
-  );
+  const filteredNotifications = notifications.filter((n) => {
+    const statusOk = filter === 'all' ? true : n.status === 'active';
+    const severityOk = severityFilter === 'all' ? true : (n.severity || 'info') === severityFilter;
+    return statusOk && severityOk;
+  });
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatMessage = (message?: string) => {
+    if (!message) return '';
+    return message
+      .replace(/water_level/gi, 'Mực nước')
+      .replace(/soil_moisture/gi, 'Độ ẩm đất')
+      .replace(/temperature/gi, 'NNhiệt độ')
+      .replace(/humidity/gi, 'Độ ẩm không khí')
+      .replace(/light/gi, 'Ánh sáng');
+  };
+
+  const formatTime = (notification: Alert) => {
+    // Prefer createdAt -> updatedAt -> resolvedAt -> timestamp
+    const ts =
+      notification.createdAt ||
+      notification.updatedAt ||
+      notification.resolvedAt ||
+      notification.timestamp;
+
+    if (!ts) return '-';
+
+    const date = new Date(ts);
+    if (Number.isNaN(date.getTime())) return '-';
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -95,7 +113,40 @@ export default function AdminNotificationsScreen() {
     fetchAlerts();
   };
 
-  const getLevelConfig = (type: string) => {
+  const handleCreate = async () => {
+    if (!newAlert.title || !newAlert.message) {
+      toast.error('Vui lòng nhập tiêu đề và nội dung');
+      return;
+    }
+    try {
+      setCreating(true);
+      await alertService.create({
+        title: newAlert.title,
+        message: newAlert.message,
+        severity: newAlert.severity,
+        type: newAlert.type,
+        targetAll: true,
+        data: newAlert.data || {},
+      });
+      toast.success('Đã tạo thông báo');
+      setShowCreateDialog(false);
+      setNewAlert({
+        title: '',
+        message: '',
+        severity: 'info',
+        type: 'manual_notice',
+        targetAll: true,
+        data: {},
+      });
+      fetchAlerts();
+    } catch (error: any) {
+      toast.error('Không thể tạo thông báo: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const getLevelConfig = (severity: string) => {
     const configs = {
       critical: {
         icon: AlertCircle,
@@ -119,7 +170,7 @@ export default function AdminNotificationsScreen() {
         label: 'Thông tin',
       },
     };
-    return configs[type as keyof typeof configs] || configs.info;
+    return configs[severity as keyof typeof configs] || configs.info;
   };
 
   return (
@@ -143,9 +194,9 @@ export default function AdminNotificationsScreen() {
       <div className="p-8 space-y-6">
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Filter className="w-5 h-5 text-gray-600" />
-            <span className="text-gray-900 font-medium">Bộ lọc:</span>
+            <span className="text-gray-900 font-medium">Bộ lọc trạng thái:</span>
             <div className="flex gap-3">
               <button
                 onClick={() => setFilter('all')}
@@ -168,6 +219,37 @@ export default function AdminNotificationsScreen() {
                 Chưa xử lý ({notifications.filter((n) => n.status === 'active').length})
               </button>
             </div>
+
+            <span className="text-gray-900 font-medium ml-4">Mức độ:</span>
+            <div className="flex gap-3">
+              {[
+                { id: 'all', label: 'Tất cả' },
+                { id: 'critical', label: 'Nghiêm trọng' },
+                { id: 'warning', label: 'Cảnh báo' },
+                { id: 'info', label: 'Thông tin' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setSeverityFilter(item.id as any)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    severityFilter === item.id
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1" />
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Tạo thông báo</span>
+            </button>
           </div>
         </div>
 
@@ -183,8 +265,8 @@ export default function AdminNotificationsScreen() {
               <p className="text-gray-500 text-lg">Không có thông báo nào</p>
             </div>
           ) : (
-            filteredNotifications.map((notification) => {
-              const config = getLevelConfig(notification.type);
+              filteredNotifications.map((notification) => {
+               const config = getLevelConfig(notification.severity || 'info');
               const Icon = config.icon;
               return (
                 <div
@@ -198,39 +280,39 @@ export default function AdminNotificationsScreen() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4 mb-2">
-                          <h3 className="text-gray-900 font-medium text-lg">{config.label}</h3>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-gray-900 font-medium text-lg">
+                              {notification.title || notification.message || config.label}
+                            </h3>
+                            <span
+                              className={`text-xs px-3 py-1 rounded-full font-medium ${
+                                notification.status === 'resolved'
+                                  ? 'bg-gray-100 text-gray-700'
+                                  : 'bg-green-100 text-green-700'
+                              }`}
+                            >
+                              {notification.status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý'}
+                            </span>
+                          </div>
                           <span className="text-sm text-gray-500 whitespace-nowrap">
-                            {formatTime(notification.timestamp)}
+                            {formatTime(notification)}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-3">
-                          {notification.message}
+                          {formatMessage(notification.message)}
                         </p>
                         <div className="flex items-center gap-2">
                           <span
                             className={`text-xs px-3 py-1 rounded-full font-medium ${
-                              notification.type === 'critical'
+                              (notification.severity || 'info') === 'critical'
                                 ? 'bg-red-100 text-red-700'
-                                : notification.type === 'warning'
+                                : (notification.severity || 'info') === 'warning'
                                 ? 'bg-orange-100 text-orange-700'
                                 : 'bg-blue-100 text-blue-700'
                             }`}
                           >
                             {config.label}
                           </span>
-                          {notification.status === 'resolved' && (
-                            <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">
-                              Đã xử lý
-                            </span>
-                          )}
-                          {!notification.isRead && (
-                            <button
-                              onClick={() => handleMarkAsRead(notification._id)}
-                              className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
-                            >
-                              Đánh dấu đã đọc
-                            </button>
-                          )}
                           {notification.status === 'active' && (
                             <button
                               onClick={() => handleResolve(notification._id)}
@@ -255,6 +337,90 @@ export default function AdminNotificationsScreen() {
           )}
         </div>
       </div>
+
+      {/* Create Alert Dialog */}
+      {showCreateDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-gray-900 text-lg font-semibold">Tạo thông báo</h2>
+              <button
+                onClick={() => setShowCreateDialog(false)}
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium">Tiêu đề</label>
+                <input
+                  type="text"
+                  value={newAlert.title}
+                  onChange={(e) => setNewAlert({ ...newAlert, title: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Nhập tiêu đề"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium">Nội dung</label>
+                <textarea
+                  value={newAlert.message}
+                  onChange={(e) => setNewAlert({ ...newAlert, message: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={4}
+                  placeholder="Nhập nội dung thông báo"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium">Mức độ</label>
+                <div className="flex gap-3">
+                  {[
+                    { id: 'critical', label: 'Nghiêm trọng' },
+                    { id: 'warning', label: 'Cảnh báo' },
+                    { id: 'info', label: 'Thông tin' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setNewAlert({ ...newAlert, severity: item.id as any })}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        newAlert.severity === item.id
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      type="button"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowCreateDialog(false)}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  type="button"
+                  disabled={creating}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleCreate}
+                  disabled={creating}
+                  className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                >
+                  {creating ? 'Đang tạo...' : 'Tạo thông báo'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

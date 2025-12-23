@@ -6,8 +6,15 @@ export interface Alert {
   type: 'info' | 'warning' | 'critical';
   message: string;
   isRead: boolean;
-  timestamp: string;
+  timestamp?: string; // optional legacy
   status?: 'active' | 'resolved';
+  severity?: string;
+  title?: string;
+  targetAll?: boolean;
+  targetUsers?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  resolvedAt?: string;
 }
 
 export interface AlertParams {
@@ -23,6 +30,22 @@ export const alertService = {
     const response = await apiClient.get<{ success: boolean; count: number; data: Alert[] }>(
       API_ENDPOINTS.ALERTS.BASE,
       { params }
+    );
+    return response.data;
+  },
+
+  async create(payload: {
+    title: string;
+    message: string;
+    severity?: 'info' | 'warning' | 'critical';
+    type?: string;
+    targetAll?: boolean;
+    targetUsers?: string[];
+    data?: any;
+  }): Promise<{ success: boolean; data: Alert }> {
+    const response = await apiClient.post<{ success: boolean; data: Alert }>(
+      API_ENDPOINTS.ALERTS.BASE,
+      payload
     );
     return response.data;
   },
