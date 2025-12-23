@@ -71,9 +71,7 @@ export default function ThresholdSettingsScreen({
     try {
       await thresholdService.update(selectedThreshold.sensorType, {
         sensorType: selectedThreshold.sensorType,
-        minValue: selectedThreshold.minValue,
-        maxValue: selectedThreshold.maxValue,
-        alertType: selectedThreshold.alertType,
+        thresholdValue: selectedThreshold.thresholdValue,
         severity: selectedThreshold.severity,
         isActive: selectedThreshold.isActive,
       });
@@ -234,29 +232,11 @@ export default function ThresholdSettingsScreen({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-6 mb-6 p-4 bg-gray-50 rounded-xl">
+                <div className="grid grid-cols-2 gap-6 mb-6 p-4 bg-gray-50 rounded-xl">
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">
-                      Ngưỡng tối thiểu
-                    </div>
+                    <div className="text-sm text-gray-500 mb-1">Ngưỡng</div>
                     <div className="text-gray-900 font-bold text-lg">
-                      {threshold.minValue} {config.unit}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500 mb-1">
-                      Ngưỡng tối đa
-                    </div>
-                    <div className="text-gray-900 font-bold text-lg">
-                      {threshold.maxValue} {config.unit}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500 mb-1">
-                      Kiểu cảnh báo
-                    </div>
-                    <div className="text-gray-900 font-medium">
-                      {getAlertTypeLabel(threshold.alertType)}
+                      {threshold.thresholdValue} {config.unit}
                     </div>
                   </div>
                   <div>
@@ -321,56 +301,19 @@ export default function ThresholdSettingsScreen({
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 mb-2">
-                  Ngưỡng tối thiểu
+                  Giá trị ngưỡng
                 </label>
                 <input
                   type="number"
-                  value={selectedThreshold.minValue}
+                  value={selectedThreshold.thresholdValue}
                   onChange={(e) =>
                     setSelectedThreshold({
                       ...selectedThreshold,
-                      minValue: parseFloat(e.target.value),
+                      thresholdValue: parseFloat(e.target.value),
                     })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2">
-                  Ngưỡng tối đa
-                </label>
-                <input
-                  type="number"
-                  value={selectedThreshold.maxValue}
-                  onChange={(e) =>
-                    setSelectedThreshold({
-                      ...selectedThreshold,
-                      maxValue: parseFloat(e.target.value),
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2">
-                  Kiểu cảnh báo
-                </label>
-                <select
-                  value={selectedThreshold.alertType}
-                  onChange={(e) =>
-                    setSelectedThreshold({
-                      ...selectedThreshold,
-                      alertType: e.target.value as any,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="low">Thấp</option>
-                  <option value="high">Cao</option>
-                  <option value="both">Cả hai</option>
-                </select>
               </div>
 
               <div>

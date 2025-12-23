@@ -68,7 +68,7 @@ export default function HistoryScreen() {
     },
     {
       id: "humidity",
-      label: "Độ ẩm KK",
+      label: "Độ ẩm không khí",
       icon: Droplets,
       unit: "%",
       color: "#3b82f6",

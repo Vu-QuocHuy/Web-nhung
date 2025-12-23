@@ -291,7 +291,7 @@ export default function AdminHomeScreen() {
                   stats.waterLevel === undefined ||
                   stats.waterLevel === null
                     ? "..."
-                    : `${Number(stats.waterLevel).toFixed(1)}%`,
+                    : `${Number(stats.waterLevel).toFixed(1)} cm`,
                 icon: Waves,
                 color: "cyan",
               },

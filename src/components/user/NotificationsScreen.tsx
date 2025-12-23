@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, AlertTriangle, Info, CheckCircle, Filter, RefreshCw } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw } from 'lucide-react';
 import { alertService, Alert } from '../../services/alert.service';
 import { toast } from 'sonner';
 
@@ -8,16 +8,19 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Alert[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
+      const params: any = { limit: 20, page };
       if (filter === 'unresolved') {
         params.status = 'active';
       }
       const response = await alertService.getAll(params);
       setNotifications(response.data);
+      setTotalPages(response.pages || 1);
     } catch (error: any) {
       console.error('Error fetching alerts:', error);
       toast.error('Không thể tải thông báo: ' + (error.response?.data?.message || error.message));
@@ -29,19 +32,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     fetchAlerts();
-  }, [filter]);
-
-  const handleMarkAsRead = async (id: string) => {
-    try {
-      await alertService.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-      );
-      toast.success('Đã đánh dấu đã đọc');
-    } catch (error: any) {
-      toast.error('Không thể đánh dấu đã đọc: ' + (error.response?.data?.message || error.message));
-    }
-  };
+  }, [filter, page]);
 
   const handleResolve = async (id: string) => {
     try {
@@ -59,8 +50,29 @@ export default function NotificationsScreen() {
     filter === 'all' ? true : n.status === 'active'
   );
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatMessage = (message?: string) => {
+    if (!message) return '';
+    return message
+      .replace(/water_level/gi, 'mực nước')
+      .replace(/soil_moisture/gi, 'độ ẩm đất')
+      .replace(/temperature/gi, 'nhiệt độ')
+      .replace(/humidity/gi, 'độ ẩm không khí')
+      .replace(/light/gi, 'ánh sáng');
+  };
+
+  const formatTime = (notification: Alert) => {
+    // Prefer createdAt -> updatedAt -> resolvedAt -> timestamp
+    const ts =
+      notification.createdAt ||
+      notification.updatedAt ||
+      notification.resolvedAt ||
+      notification.timestamp;
+
+    if (!ts) return '-';
+
+    const date = new Date(ts);
+    if (Number.isNaN(date.getTime())) return '-';
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -73,7 +85,7 @@ export default function NotificationsScreen() {
     return `${diffDays} ngày trước`;
   };
 
-  const getLevelConfig = (type: string) => {
+  const getLevelConfig = (severity: string) => {
     const configs = {
       critical: {
         icon: AlertCircle,
@@ -97,11 +109,12 @@ export default function NotificationsScreen() {
         label: 'Thông tin',
       },
     };
-    return configs[type as keyof typeof configs] || configs.info;
+    return configs[severity as keyof typeof configs] || configs.info;
   };
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setPage(1);
     fetchAlerts();
   };
 
@@ -166,8 +179,8 @@ export default function NotificationsScreen() {
               <p className="text-gray-500 text-lg">Không có thông báo nào</p>
             </div>
           ) : (
-            filteredNotifications.map((notification) => {
-              const config = getLevelConfig(notification.type);
+              filteredNotifications.map((notification) => {
+               const config = getLevelConfig(notification.severity || 'info');
               const Icon = config.icon;
               return (
                 <div
@@ -181,13 +194,26 @@ export default function NotificationsScreen() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4 mb-2">
-                          <h3 className="text-gray-900 font-medium text-lg">{config.label}</h3>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-gray-900 font-medium text-lg">
+                              {notification.title || notification.message || config.label}
+                            </h3>
+                            <span
+                              className={`text-xs px-3 py-1 rounded-full font-medium ${
+                                notification.status === 'resolved'
+                                  ? 'bg-gray-100 text-gray-700'
+                                  : 'bg-green-100 text-green-700'
+                              }`}
+                            >
+                              {notification.status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý'}
+                            </span>
+                          </div>
                           <span className="text-sm text-gray-500 whitespace-nowrap">
-                            {formatTime(notification.timestamp)}
+                            {formatTime(notification)}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-3">
-                          {notification.message}
+                          {formatMessage(notification.message)}
                         </p>
                         <div className="flex items-center gap-2">
                           <span
@@ -201,19 +227,6 @@ export default function NotificationsScreen() {
                           >
                             {config.label}
                           </span>
-                          {notification.status === 'resolved' && (
-                            <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 font-medium">
-                              Đã xử lý
-                            </span>
-                          )}
-                          {!notification.isRead && (
-                            <button
-                              onClick={() => handleMarkAsRead(notification._id)}
-                              className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium hover:bg-blue-200"
-                            >
-                              Đánh dấu đã đọc
-                            </button>
-                          )}
                           {notification.status === 'active' && (
                             <button
                               onClick={() => handleResolve(notification._id)}
@@ -231,6 +244,31 @@ export default function NotificationsScreen() {
             })
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                Trang {page} / {totalPages}
+              </span>
+            </div>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

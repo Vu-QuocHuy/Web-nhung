@@ -6,7 +6,8 @@ export interface Schedule {
   name: string;
   deviceName: string;
   action: 'ON' | 'OFF' | 'AUTO';
-  time: string; // HH:mm format
+  startTime: string; // HH:mm format
+  endTime: string;   // HH:mm format
   daysOfWeek: number[]; // [0=Sunday, 1=Monday, ..., 6=Saturday]
   enabled: boolean;
   createdAt?: string;
@@ -17,7 +18,8 @@ export interface CreateScheduleData {
   name: string;
   deviceName: string;
   action: 'ON' | 'OFF' | 'AUTO';
-  time: string;
+  startTime: string;
+  endTime: string;
   daysOfWeek: number[];
   enabled: boolean;
 }
