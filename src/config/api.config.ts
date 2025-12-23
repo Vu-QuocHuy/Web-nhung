@@ -1,8 +1,11 @@
 // API Configuration
+const API_BASE_URL =
+  // Lấy từ biến môi trường Vite; dùng any để tránh lỗi type khi lint ngoài Vite
+  (import.meta as any).env?.VITE_API_BASE_URL;
+
 export const API_CONFIG = {
-  // Use environment variable or fallback to localhost
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
-  // Production URL: 'https://smart-farm-backend-id2x.onrender.com/api'
+  // Base URL lấy từ biến môi trường Vite (.env/.env.production)
+  BASE_URL: API_BASE_URL,
   TIMEOUT: 10000, // 10 seconds
 };
 

@@ -15,6 +15,7 @@ export interface AlertParams {
   level?: 'info' | 'warning' | 'critical';
   isRead?: boolean;
   limit?: number;
+  page?: number;
 }
 
 export const alertService = {
@@ -26,10 +27,24 @@ export const alertService = {
     return response.data;
   },
 
-  async getUnread(): Promise<Alert[]> {
-    const response = await apiClient.get<{ success: boolean; data: Alert[] }>(
-      API_ENDPOINTS.ALERTS.UNREAD
-    );
+  /**
+   * Lấy danh sách cảnh báo chưa được xử lý cho user hiện tại.
+   * Backend hiện tại không có route `/alerts/unread`, nên ta dùng
+   * `/alerts?status=active` và coi các cảnh báo `active` là chưa đọc.
+   */
+  async getUnread(limit: number = 50): Promise<Alert[]> {
+    const response = await apiClient.get<{
+      success: boolean;
+      count: number;
+      total: number;
+      data: Alert[];
+    }>(API_ENDPOINTS.ALERTS.BASE, {
+      params: {
+        status: 'active',
+        limit,
+      },
+    });
+
     return response.data.data;
   },
 
