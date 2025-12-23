@@ -2,19 +2,15 @@ import apiClient from './api.client';
 import { API_ENDPOINTS } from '../config/api.config';
 
 export interface Threshold {
-  sensorType: 'temperature' | 'humidity' | 'soil_moisture' | 'water_level' | 'light';
-  minValue: number;
-  maxValue: number;
-  alertType: 'low' | 'high' | 'both';
+  sensorType: 'temperature' | 'soil_moisture' | 'light';
+  thresholdValue: number;
   severity: 'info' | 'warning' | 'critical';
   isActive: boolean;
 }
 
 export interface CreateThresholdData {
   sensorType: string;
-  minValue: number;
-  maxValue: number;
-  alertType: 'low' | 'high' | 'both';
+  thresholdValue: number;
   severity: 'info' | 'warning' | 'critical';
   isActive: boolean;
 }

@@ -88,7 +88,7 @@ const DEVICE_CONFIG: Record<string, DeviceConfigEntry> = {
   },
 };
 
-export default function DeviceControlScreen(): JSX.Element {
+export default function DeviceControlScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [devices, setDevices] = useState([] as Device[]);
@@ -146,24 +146,28 @@ export default function DeviceControlScreen(): JSX.Element {
     fetchDeviceStatus();
   };
 
-  const toggleDevice = async (device: Device) => {
+  const setDeviceStatus = async (device: Device, targetStatus: DeviceStatus) => {
     try {
-      const newAction: DeviceStatus = device.status === "ON" ? "OFF" : "ON";
       await deviceService.controlDevice({
         deviceName: device.name as any,
-        action: newAction,
+        action: targetStatus,
         value: 0,
       });
 
       setDevices((prev: Device[]) =>
         prev.map((d: Device) =>
-          d.id === device.id ? { ...d, status: newAction } : d
+          d.id === device.id ? { ...d, status: targetStatus } : d
         )
       );
 
-      toast.success(
-        `${device.displayName} đã được ${newAction === "ON" ? "bật" : "tắt"}`
-      );
+      const actionLabel =
+        targetStatus === "ON"
+          ? "bật"
+          : targetStatus === "OFF"
+          ? "tắt"
+          : "chuyển sang tự động";
+
+      toast.success(`${device.displayName} đã được ${actionLabel}`);
     } catch (error: any) {
       console.error("Error controlling device:", error);
       toast.error(
@@ -258,6 +262,12 @@ export default function DeviceControlScreen(): JSX.Element {
               const isActive =
                 device.status === "ON" || device.status === "AUTO";
               const colors = getColorClasses(device.color, isActive);
+              const statusClasses =
+                device.status === "AUTO"
+                  ? "bg-yellow-100 text-gray-800 border border-yellow-300"
+                  : device.status === "ON"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-600";
               return (
                 <div
                   key={device.id}
@@ -267,13 +277,7 @@ export default function DeviceControlScreen(): JSX.Element {
                     <div className={`${colors.bg} p-4 rounded-xl`}>
                       <Icon className={`w-8 h-8 ${colors.icon}`} />
                     </div>
-                    <div
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        isActive
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${statusClasses}`}>
                       {device.status === "AUTO"
                         ? "Tự động"
                         : device.status === "ON"
@@ -288,24 +292,44 @@ export default function DeviceControlScreen(): JSX.Element {
                     </div>
                     <div className="text-gray-500 text-sm">
                       ID: {device.name}
+                      <span className="block text-xs text-gray-400">
+                        Nhấn nút để chuyển: Bật → Tắt → Tự động
+                      </span>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => toggleDevice(device)}
-                    disabled={device.status === "AUTO"}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-                      isActive
-                        ? "bg-red-600 hover:bg-red-700 text-white"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  >
-                    {device.status === "AUTO"
-                      ? "Tự động"
-                      : isActive
-                      ? "Tắt"
-                      : "Bật"}
-                  </button>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setDeviceStatus(device, "ON")}
+                      className={`py-2 rounded-lg font-medium transition-colors ${
+                        device.status === "ON"
+                          ? "bg-green-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Bật
+                    </button>
+                    <button
+                      onClick={() => setDeviceStatus(device, "OFF")}
+                      className={`py-2 rounded-lg font-medium transition-colors ${
+                        device.status === "OFF"
+                          ? "bg-red-600 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tắt
+                    </button>
+                    <button
+                      onClick={() => setDeviceStatus(device, "AUTO")}
+                      className={`py-2 rounded-lg font-medium transition-colors ${
+                        device.status === "AUTO"
+                          ? "bg-white border border-yellow-400 text-yellow-700"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      Tự động
+                    </button>
+                  </div>
                 </div>
               );
             })}

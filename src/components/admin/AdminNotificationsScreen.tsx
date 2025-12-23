@@ -9,6 +9,8 @@ export default function AdminNotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState([] as Alert[]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newAlert, setNewAlert] = useState({
@@ -23,7 +25,7 @@ export default function AdminNotificationsScreen() {
   const fetchAlerts = async () => {
     try {
       setLoading(true);
-      const params: any = { limit: 100 };
+      const params: any = { limit: 20, page };
       if (filter === 'unresolved') {
         params.status = 'active';
       }
@@ -32,6 +34,7 @@ export default function AdminNotificationsScreen() {
       }
       const response = await alertService.getAll(params);
       setNotifications(response.data);
+      setTotalPages(response.pages || 1);
     } catch (error: any) {
       console.error('Error fetching alerts:', error);
       toast.error('Không thể tải thông báo: ' + (error.response?.data?.message || error.message));
@@ -43,7 +46,7 @@ export default function AdminNotificationsScreen() {
 
   useEffect(() => {
     fetchAlerts();
-  }, [filter, severityFilter]);
+  }, [filter, severityFilter, page]);
 
   const handleResolve = async (id: string) => {
     try {
@@ -110,6 +113,7 @@ export default function AdminNotificationsScreen() {
 
   const handleRefresh = () => {
     setRefreshing(true);
+    setPage(1);
     fetchAlerts();
   };
 
@@ -336,6 +340,31 @@ export default function AdminNotificationsScreen() {
             })
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">
+                Trang {page} / {totalPages}
+              </span>
+            </div>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Create Alert Dialog */}

@@ -30,7 +30,7 @@ export default function HistoryScreen() {
     { id: 'temperature', label: 'Nhiệt độ', icon: Thermometer, unit: '°C', color: '#ef4444' },
     { id: 'humidity', label: 'Độ ẩm KK', icon: Droplets, unit: '%', color: '#3b82f6' },
     { id: 'soilMoisture', label: 'Độ ẩm đất', icon: Sprout, unit: '%', color: '#22c55e' },
-    { id: 'waterLevel', label: 'Mực nước', icon: Waves, unit: '%', color: '#06b6d4' },
+    { id: 'waterLevel', label: 'Mực nước', icon: Waves, unit: 'cm', color: '#06b6d4' },
     { id: 'light', label: 'Ánh sáng', icon: Sun, unit: 'lux', color: '#eab308' },
   ];
 

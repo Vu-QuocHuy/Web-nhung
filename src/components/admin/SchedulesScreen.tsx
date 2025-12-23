@@ -6,7 +6,11 @@ import { toast } from 'sonner';
 const DEVICE_NAMES: Record<string, string> = {
   pump: 'Bơm nước',
   fan: 'Quạt',
-  light: 'Đèn',
+  servo_door: 'Cửa chuồng (servo)',
+  servo_feed: 'Cho ăn (servo)',
+  led_farm: 'Đèn khu trồng trọt',
+  led_animal: 'Đèn khu chuồng trại',
+  led_hallway: 'Đèn hành lang',
 };
 
 const DAY_LABELS: Record<number, string> = {
@@ -29,7 +33,8 @@ export default function SchedulesScreen() {
     name: '',
     deviceName: 'pump',
     action: 'ON' as 'ON' | 'OFF' | 'AUTO',
-    time: '',
+    startTime: '',
+    endTime: '',
     daysOfWeek: [] as number[],
   });
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -55,7 +60,11 @@ export default function SchedulesScreen() {
   const devices = [
     { id: 'pump', name: 'Bơm nước' },
     { id: 'fan', name: 'Quạt' },
-    { id: 'light', name: 'Đèn' },
+    { id: 'servo_door', name: 'Cửa chuồng (servo)' },
+    { id: 'servo_feed', name: 'Cho ăn (servo)' },
+    { id: 'led_farm', name: 'Đèn khu trồng trọt' },
+    { id: 'led_animal', name: 'Đèn khu chuồng trại' },
+    { id: 'led_hallway', name: 'Đèn hành lang' },
   ];
 
   const daysOfWeek = [
@@ -69,7 +78,12 @@ export default function SchedulesScreen() {
   ];
 
   const handleAddSchedule = async () => {
-    if (!newSchedule.name || !newSchedule.deviceName || !newSchedule.time) {
+    if (
+      !newSchedule.name ||
+      !newSchedule.deviceName ||
+      !newSchedule.startTime ||
+      !newSchedule.endTime
+    ) {
       toast.error('Vui lòng nhập đầy đủ thông tin');
       return;
     }
@@ -79,18 +93,31 @@ export default function SchedulesScreen() {
       return;
     }
 
+    if (newSchedule.startTime >= newSchedule.endTime) {
+      toast.error('Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc');
+      return;
+    }
+
     try {
       await scheduleService.create({
         name: newSchedule.name,
         deviceName: newSchedule.deviceName,
         action: newSchedule.action,
-        time: newSchedule.time,
+        startTime: newSchedule.startTime,
+        endTime: newSchedule.endTime,
         daysOfWeek: newSchedule.daysOfWeek,
         enabled: true,
       });
       toast.success('Thêm lịch trình thành công');
       setShowAddDialog(false);
-      setNewSchedule({ name: '', deviceName: 'pump', action: 'ON', time: '', daysOfWeek: [] });
+      setNewSchedule({
+        name: '',
+        deviceName: 'pump',
+        action: 'ON',
+        startTime: '',
+        endTime: '',
+        daysOfWeek: [],
+      });
       fetchSchedules();
     } catch (error: any) {
       toast.error('Không thể thêm lịch trình: ' + (error.response?.data?.message || error.message));
@@ -105,7 +132,8 @@ export default function SchedulesScreen() {
         name: selectedSchedule.name,
         deviceName: selectedSchedule.deviceName,
         action: selectedSchedule.action,
-        time: selectedSchedule.time,
+        startTime: selectedSchedule.startTime,
+        endTime: selectedSchedule.endTime,
         daysOfWeek: selectedSchedule.daysOfWeek,
         enabled: selectedSchedule.enabled,
       });
@@ -239,7 +267,9 @@ export default function SchedulesScreen() {
                     <Clock className="w-5 h-5 text-purple-600" />
                     <div>
                       <div className="text-xs text-gray-500">Thời gian</div>
-                      <div className="text-gray-900 font-medium">{schedule.time}</div>
+                      <div className="text-gray-900 font-medium">
+                        {schedule.startTime} - {schedule.endTime}
+                      </div>
                     </div>
                   </div>
 
@@ -353,14 +383,29 @@ export default function SchedulesScreen() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium">Thời gian</label>
-                <input
-                  type="time"
-                  value={newSchedule.time}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, time: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Thời gian bắt đầu</label>
+                  <input
+                    type="time"
+                    value={newSchedule.startTime}
+                    onChange={(e) =>
+                      setNewSchedule({ ...newSchedule, startTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Thời gian kết thúc</label>
+                  <input
+                    type="time"
+                    value={newSchedule.endTime}
+                    onChange={(e) =>
+                      setNewSchedule({ ...newSchedule, endTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
               </div>
 
               <div>
@@ -432,16 +477,29 @@ export default function SchedulesScreen() {
                 />
               </div>
 
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium">Thời gian</label>
-                <input
-                  type="time"
-                  value={selectedSchedule.time}
-                  onChange={(e) =>
-                    setSelectedSchedule({ ...selectedSchedule, time: e.target.value })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Thời gian bắt đầu</label>
+                  <input
+                    type="time"
+                    value={selectedSchedule.startTime}
+                    onChange={(e) =>
+                      setSelectedSchedule({ ...selectedSchedule, startTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">Thời gian kết thúc</label>
+                  <input
+                    type="time"
+                    value={selectedSchedule.endTime}
+                    onChange={(e) =>
+                      setSelectedSchedule({ ...selectedSchedule, endTime: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
               </div>
 
               <div>

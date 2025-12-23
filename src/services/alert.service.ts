@@ -19,18 +19,30 @@ export interface Alert {
 
 export interface AlertParams {
   status?: 'active' | 'resolved';
-  level?: 'info' | 'warning' | 'critical';
+  level?: 'info' | 'warning' | 'critical'; // legacy
+  severity?: 'info' | 'warning' | 'critical';
   isRead?: boolean;
   limit?: number;
   page?: number;
 }
 
 export const alertService = {
-  async getAll(params?: AlertParams): Promise<{ success: boolean; count: number; data: Alert[] }> {
-    const response = await apiClient.get<{ success: boolean; count: number; data: Alert[] }>(
-      API_ENDPOINTS.ALERTS.BASE,
-      { params }
-    );
+  async getAll(params?: AlertParams): Promise<{
+    success: boolean;
+    count: number;
+    total: number;
+    page: number;
+    pages: number;
+    data: Alert[];
+  }> {
+    const response = await apiClient.get<{
+      success: boolean;
+      count: number;
+      total: number;
+      page: number;
+      pages: number;
+      data: Alert[];
+    }>(API_ENDPOINTS.ALERTS.BASE, { params });
     return response.data;
   },
 

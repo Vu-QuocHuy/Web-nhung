@@ -120,7 +120,7 @@ export default function HomeScreen() {
       label: 'Mực nước',
       value: loading || sensorData.waterLevel === undefined || sensorData.waterLevel === null
         ? '...'
-        : `${Number(sensorData.waterLevel).toFixed(1)}%`,
+        : `${Number(sensorData.waterLevel).toFixed(1)} cm`,
       icon: Waves,
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-50',
