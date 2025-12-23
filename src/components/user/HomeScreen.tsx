@@ -40,18 +40,18 @@ export default function HomeScreen() {
       // Fetch sensor data
       const latestData = await sensorService.getLatest();
       setSensorData({
-        temperature: latestData.temperature || 0,
-        humidity: latestData.humidity || 0,
-        soilMoisture: latestData.soilMoisture || 0,
-        waterLevel: latestData.waterLevel || 0,
-        light: latestData.light || 0,
+        temperature: latestData.temperature ?? 0,
+        humidity: latestData.humidity ?? 0,
+        soilMoisture: latestData.soilMoisture ?? 0,
+        waterLevel: latestData.waterLevel ?? 0,
+        light: latestData.light ?? 0,
         lastUpdate: new Date(latestData.timestamp || Date.now()),
       });
 
       // Fetch device status
       const deviceStatus = await deviceService.getStatus();
       const onlineDevices = Object.values(deviceStatus).filter(
-        (device) => device.status === 'ON' || device.status === 'AUTO'
+        (status) => status === 'ON' || status === 'AUTO'
       ).length;
 
       // Fetch schedules

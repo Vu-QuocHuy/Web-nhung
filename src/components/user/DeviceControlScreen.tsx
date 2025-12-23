@@ -81,7 +81,7 @@ const DEVICE_CONFIG: Record<string, Omit<Device, 'status'>> = {
 export default function DeviceControlScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [devices, setDevices] = useState([] as Device[]);
 
   const fetchDeviceStatus = async () => {
     try {
@@ -132,6 +132,7 @@ export default function DeviceControlScreen() {
       await deviceService.controlDevice({
         deviceName: device.name as 'pump' | 'fan' | 'light' | 'servo' | 'servo1' | 'servo2' | 'led1' | 'led2' | 'led3',
         action: newAction,
+        value: 0, // Default value for devices that don't need PWM
       });
 
       // Update local state

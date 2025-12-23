@@ -45,11 +45,11 @@ export default function AdminHomeScreen() {
       
       setStats((prev) => ({
         ...prev,
-        temperature: latestData.temperature || 0,
-        humidity: latestData.humidity || 0,
-        soilMoisture: latestData.soilMoisture || 0,
-        waterLevel: latestData.waterLevel || 0,
-        light: latestData.light || 0,
+        temperature: latestData.temperature ?? 0,
+        humidity: latestData.humidity ?? 0,
+        soilMoisture: latestData.soilMoisture ?? 0,
+        waterLevel: latestData.waterLevel ?? 0,
+        light: latestData.light ?? 0,
         lastUpdate: new Date(latestData.timestamp || Date.now()),
       }));
     } catch (error: any) {

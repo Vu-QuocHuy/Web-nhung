@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { RefreshCw, Thermometer, Droplets, Sprout, Waves, Sun } from 'lucide-react';
+import { RefreshCw, Thermometer, Droplets, Sprout, Waves, Sun, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 import { sensorService } from '../../services/sensor.service';
 import { toast } from 'sonner';
 
@@ -20,6 +20,11 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<{ time: string; value: number }[]>([]);
+  const [stats, setStats] = useState<{ min: number | null; max: number | null; avg: number | null }>({
+    min: null,
+    max: null,
+    avg: null,
+  });
 
   const sensors = [
     { id: 'temperature', label: 'Nhiệt độ', icon: Thermometer, unit: '°C', color: '#ef4444' },
@@ -33,13 +38,14 @@ export default function HistoryScreen() {
     try {
       setLoading(true);
       const hours = timeRange === 'today' ? 24 : timeRange === '7days' ? 168 : 720;
-      const history = await sensorService.getHistory({
+      const response = await sensorService.getHistory({
         type: selectedSensor,
         hours,
       });
 
-      const formattedData = history.map((point, index) => {
-        const date = new Date(point.timestamp);
+      // Format data for chart
+      const formattedData = response.data.map((point) => {
+        const date = new Date(point.createdAt || point.updatedAt);
         let timeLabel = '';
         
         if (timeRange === 'today') {
@@ -59,10 +65,12 @@ export default function HistoryScreen() {
       });
 
       setChartData(formattedData);
+      setStats(response.stats || { min: null, max: null, avg: null });
     } catch (error: any) {
       console.error('Error fetching history:', error);
       toast.error('Không thể tải lịch sử: ' + (error.response?.data?.message || error.message));
       setChartData([]);
+      setStats({ min: null, max: null, avg: null });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -194,21 +202,48 @@ export default function HistoryScreen() {
           )}
         </div>
 
-        {/* Data List */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-gray-900 mb-4">Chi tiết dữ liệu</h2>
-          <div className="space-y-2">
-            {chartData.slice().reverse().slice(0, 10).map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <span className="text-gray-600 font-medium">{item.time}</span>
-                <span className="text-gray-900 font-bold">
-                  {item.value} {currentSensor.unit}
-                </span>
+        {/* Statistics */}
+        <div className="grid grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-red-100 p-3 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-red-600" />
               </div>
-            ))}
+              <div>
+                <div className="text-sm text-gray-500">Giá trị cao nhất</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {loading ? '...' : stats.max !== null ? `${stats.max.toFixed(1)} ${currentSensor.unit}` : '-'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <TrendingDown className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Giá trị thấp nhất</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {loading ? '...' : stats.min !== null ? `${stats.min.toFixed(1)} ${currentSensor.unit}` : '-'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-green-100 p-3 rounded-lg">
+                <BarChart3 className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Giá trị trung bình</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {loading ? '...' : stats.avg !== null ? `${stats.avg.toFixed(1)} ${currentSensor.unit}` : '-'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
