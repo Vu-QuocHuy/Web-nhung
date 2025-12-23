@@ -22,6 +22,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const mainTabs = [
     { id: 'home', label: 'Trang chủ', icon: Home, section: 'main' },
@@ -69,27 +70,34 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300`}>
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="flex items-center gap-3 w-full hover:opacity-80 transition-opacity"
+          >
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-2 rounded-lg">
               <Leaf className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-gray-900">Nông Trại</h2>
-              <p className="text-sm text-purple-600 font-medium">Quản Trị</p>
-            </div>
-          </div>
+            {isSidebarOpen && (
+              <div>
+                <h2 className="text-gray-900">Nông Trại</h2>
+                <p className="text-sm text-purple-600 font-medium">Quản Trị</p>
+              </div>
+            )}
+          </button>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
           {/* Main Section */}
           <div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
-              Chính
-            </div>
+            {isSidebarOpen && (
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
+                Chính
+              </div>
+            )}
             <div className="space-y-1">
               {mainTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -98,14 +106,15 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
                       isActive
                         ? 'bg-purple-50 text-purple-700 font-medium'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
+                    title={!isSidebarOpen ? tab.label : ''}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-purple-600' : 'text-gray-500'}`} />
-                    <span>{tab.label}</span>
+                    {isSidebarOpen && <span>{tab.label}</span>}
                   </button>
                 );
               })}
@@ -114,9 +123,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
           {/* Management Section */}
           <div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
-              Quản lý
-            </div>
+            {isSidebarOpen && (
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
+                Quản lý
+              </div>
+            )}
             <div className="space-y-1">
               {managementTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -125,14 +136,15 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
                       isActive
                         ? 'bg-purple-50 text-purple-700 font-medium'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
+                    title={!isSidebarOpen ? tab.label : ''}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-purple-600' : 'text-gray-500'}`} />
-                    <span className="text-sm">{tab.label}</span>
+                    {isSidebarOpen && <span className="text-sm">{tab.label}</span>}
                   </button>
                 );
               })}
@@ -141,9 +153,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
 
           {/* Personal Section */}
           <div>
-            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
-              Cá nhân
-            </div>
+            {isSidebarOpen && (
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-4">
+                Cá nhân
+              </div>
+            )}
             <div className="space-y-1">
               {personalTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -152,14 +166,15 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
                       isActive
                         ? 'bg-purple-50 text-purple-700 font-medium'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
+                    title={!isSidebarOpen ? tab.label : ''}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-purple-600' : 'text-gray-500'}`} />
-                    <span className="text-sm">{tab.label}</span>
+                    {isSidebarOpen && <span className="text-sm">{tab.label}</span>}
                   </button>
                 );
               })}
@@ -171,10 +186,11 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors`}
+            title={!isSidebarOpen ? 'Đăng xuất' : ''}
           >
             <LogOut className="w-5 h-5" />
-            <span>Đăng xuất</span>
+            {isSidebarOpen && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>

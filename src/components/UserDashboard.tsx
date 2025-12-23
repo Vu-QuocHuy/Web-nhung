@@ -18,6 +18,7 @@ interface UserDashboardProps {
 
 export default function UserDashboard({ user, onLogout }: UserDashboardProps) {
   const [activeTab, setActiveTab] = useState('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const tabs = [
     { id: 'home', label: 'Trang chủ', icon: Home },
@@ -47,18 +48,23 @@ export default function UserDashboard({ user, onLogout }: UserDashboardProps) {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300`}>
         {/* Logo */}
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="flex items-center gap-3 w-full hover:opacity-80 transition-opacity"
+          >
             <div className="bg-green-100 p-2 rounded-lg">
               <Leaf className="w-6 h-6 text-green-600" />
             </div>
-            <div>
-              <h2 className="text-gray-900">Nông Trại</h2>
-              <p className="text-sm text-gray-500">Thông Minh</p>
-            </div>
-          </div>
+            {isSidebarOpen && (
+              <div>
+                <h2 className="text-gray-900">Nông Trại</h2>
+                <p className="text-sm text-gray-500">Thông Minh</p>
+              </div>
+            )}
+          </button>
         </div>
 
         {/* Navigation */}
@@ -70,14 +76,15 @@ export default function UserDashboard({ user, onLogout }: UserDashboardProps) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-lg transition-all ${
                   isActive
                     ? 'bg-green-50 text-green-700 font-medium'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
+                title={!isSidebarOpen ? tab.label : ''}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'text-green-600' : 'text-gray-500'}`} />
-                <span>{tab.label}</span>
+                {isSidebarOpen && <span>{tab.label}</span>}
               </button>
             );
           })}
@@ -87,10 +94,11 @@ export default function UserDashboard({ user, onLogout }: UserDashboardProps) {
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={onLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className={`w-full flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors`}
+            title={!isSidebarOpen ? 'Đăng xuất' : ''}
           >
             <LogOut className="w-5 h-5" />
-            <span>Đăng xuất</span>
+            {isSidebarOpen && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>

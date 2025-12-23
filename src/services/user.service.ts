@@ -5,9 +5,12 @@ export interface User {
   _id: string;
   username: string;
   email: string;
+  phone?: string;
+  address?: string;
   role: 'admin' | 'user';
   isActive: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserParams {
@@ -15,16 +18,27 @@ export interface UserParams {
   limit?: number;
   role?: 'admin' | 'user';
   isActive?: boolean;
+  search?: string;
+}
+
+export interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalUsers: number;
+  limit: number;
 }
 
 export interface UpdateUserData {
-  username?: string;
   email?: string;
+  phone?: string;
+  address?: string;
+  role?: 'admin' | 'user';
+  isActive?: boolean;
 }
 
 export const userService = {
-  async getAll(params?: UserParams): Promise<{ success: boolean; count: number; data: User[] }> {
-    const response = await apiClient.get<{ success: boolean; count: number; data: User[] }>(
+  async getAll(params?: UserParams): Promise<{ success: boolean; data: User[]; pagination: Pagination }> {
+    const response = await apiClient.get<{ success: boolean; data: User[]; pagination: Pagination }>(
       API_ENDPOINTS.USERS.BASE,
       { params }
     );

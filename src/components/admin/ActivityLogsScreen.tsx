@@ -21,10 +21,12 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
         params.action = filterType;
       }
       const response = await activityLogService.getAll(params);
-      setLogs(response.data);
+      // Ensure logs is an array
+      setLogs(Array.isArray(response.data) ? response.data : []);
     } catch (error: any) {
       console.error('Error fetching activity logs:', error);
       toast.error('Không thể tải lịch sử hoạt động: ' + (error.response?.data?.message || error.message));
+      setLogs([]); // Set empty array on error
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,12 +53,46 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
     });
   };
 
+  const getActionLabel = (action: string): string => {
+    const actionMap: Record<string, string> = {
+      // User management
+      'register_user': 'Đăng ký người dùng',
+      'update_user': 'Cập nhật người dùng',
+      'delete_user': 'Xóa người dùng',
+      'toggle_user_status': 'Thay đổi trạng thái người dùng',
+      // Device control
+      'control_device': 'Điều khiển thiết bị',
+      // Schedule
+      'create_schedule': 'Tạo lịch trình',
+      'update_schedule': 'Cập nhật lịch trình',
+      'delete_schedule': 'Xóa lịch trình',
+      // Threshold
+      'create_threshold': 'Tạo ngưỡng',
+      'update_threshold': 'Cập nhật ngưỡng',
+      'delete_threshold': 'Xóa ngưỡng',
+    };
+    return actionMap[action] || action;
+  };
+
+  const getResourceTypeLabel = (resourceType?: string): string => {
+    const resourceTypeMap: Record<string, string> = {
+      'user': 'Người dùng',
+      'device': 'Thiết bị',
+      'sensor': 'Cảm biến',
+      'alert': 'Cảnh báo',
+      'schedule': 'Lịch trình',
+      'threshold': 'Ngưỡng',
+      'system': 'Hệ thống',
+    };
+    return resourceType ? (resourceTypeMap[resourceType] || resourceType) : '-';
+  };
+
   const getLogType = (action: string): 'user' | 'device' | 'threshold' | 'schedule' => {
     const lowerAction = action.toLowerCase();
-    if (lowerAction.includes('user') || lowerAction.includes('người dùng')) return 'user';
-    if (lowerAction.includes('device') || lowerAction.includes('thiết bị')) return 'device';
-    if (lowerAction.includes('threshold') || lowerAction.includes('ngưỡng')) return 'threshold';
-    if (lowerAction.includes('schedule') || lowerAction.includes('lịch trình')) return 'schedule';
+    if (lowerAction.includes('user')) return 'user';
+    if (lowerAction.includes('device')) return 'device';
+    if (lowerAction.includes('threshold')) return 'threshold';
+    if (lowerAction.includes('schedule')) return 'schedule';
     return 'user';
   };
 
@@ -228,16 +264,27 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900">{log.username || 'System'}</div>
+                          <div className="font-medium text-gray-900">
+                            {log.userId && typeof log.userId === 'object' && 'username' in log.userId
+                              ? (log.userId as any).username
+                              : log.username || 'System'}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-900">{log.action}</div>
+                          <div className="text-gray-900">{getActionLabel(log.action)}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-600">{log.target}</div>
+                          <div className="text-gray-600">
+                            {getResourceTypeLabel(log.resourceType)}
+                            {log.resourceId && (
+                              <span className="text-gray-400 ml-2">(ID: {log.resourceId})</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-gray-600">{formatTime(log.timestamp)}</div>
+                          <div className="text-gray-600">
+                            {formatTime(log.createdAt || log.timestamp || new Date().toISOString())}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {log.status === 'success' ? (

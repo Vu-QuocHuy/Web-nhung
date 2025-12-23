@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Shield, Power, Lock, CheckCircle } from 'lucide-react';
+import { User, Mail, Shield, Power, Lock, CheckCircle, X } from 'lucide-react';
 import { authService } from '../../services/auth.service';
 import { toast } from 'sonner';
 
@@ -65,20 +65,34 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-12 border-b border-gray-200">
-        <div className="flex items-center gap-6">
-          <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <User className="w-12 h-12" />
-          </div>
-          <div>
-            <h1 className="mb-2">{user.name}</h1>
-            <p className="text-green-100 text-lg">{user.email}</p>
-          </div>
-        </div>
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <h1 className="text-gray-900">Quản lý tài khoản cá nhân</h1>
       </div>
 
       {/* Content */}
       <div className="p-8 space-y-6">
+        {/* User Profile Card */}
+        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-sm p-8 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <User className="w-12 h-12" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">{user.name}</h2>
+                <p className="text-green-100 text-lg">{user.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowChangePassword(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm font-medium"
+            >
+              <Lock className="w-5 h-5" />
+              <span>Đổi mật khẩu</span>
+            </button>
+          </div>
+        </div>
+
         {/* Account Info */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-gray-900 mb-6">Thông tin tài khoản</h2>
@@ -127,72 +141,13 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
           </div>
         </div>
 
-        {/* Change Password Section */}
-        {!showChangePassword ? (
-          <button
-            onClick={() => setShowChangePassword(true)}
-            className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex items-center justify-between hover:shadow-md transition-shadow group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="bg-blue-50 p-3 rounded-lg group-hover:bg-blue-100 transition-colors">
-                <Lock className="w-6 h-6 text-blue-600" />
-              </div>
-              <span className="text-gray-900 font-medium text-lg">Đổi mật khẩu</span>
-            </div>
-            <span className="text-gray-400 text-2xl">›</span>
-          </button>
-        ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-gray-900 mb-6">Đổi mật khẩu</h2>
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium">
-                  Mật khẩu cũ
-                </label>
-                <input
-                  type="password"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Nhập mật khẩu cũ"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium">
-                  Mật khẩu mới
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Nhập mật khẩu mới"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2 font-medium">
-                  Xác nhận mật khẩu mới
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Nhập lại mật khẩu mới"
-                />
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
+        {/* Change Password Dialog */}
+        {showChangePassword && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-gray-900 text-xl font-semibold">Đổi mật khẩu</h2>
                 <button
-                  type="button"
                   onClick={() => {
                     setShowChangePassword(false);
                     setOldPassword('');
@@ -200,19 +155,82 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
                     setConfirmPassword('');
                     setError('');
                   }}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
                 >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Đang xử lý...' : 'Lưu thay đổi'}
+                  <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-            </form>
+
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">
+                    Mật khẩu cũ
+                  </label>
+                  <input
+                    type="password"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Nhập mật khẩu cũ"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">
+                    Mật khẩu mới
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Nhập mật khẩu mới"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 mb-2 font-medium">
+                    Xác nhận mật khẩu mới
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Nhập lại mật khẩu mới"
+                  />
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowChangePassword(false);
+                      setOldPassword('');
+                      setNewPassword('');
+                      setConfirmPassword('');
+                      setError('');
+                    }}
+                    className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Đang xử lý...' : 'Lưu thay đổi'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

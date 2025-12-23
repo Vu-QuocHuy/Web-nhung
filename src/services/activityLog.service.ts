@@ -3,12 +3,16 @@ import { API_ENDPOINTS } from '../config/api.config';
 
 export interface ActivityLog {
   _id: string;
-  userId: string;
+  userId: string | { _id: string; username?: string; email?: string; role?: string };
   username?: string;
   action: string;
-  target: string;
-  status: 'success' | 'failure';
-  timestamp: string;
+  target?: string;
+  resourceType?: string;
+  resourceId?: string;
+  status: 'success' | 'failed';
+  timestamp?: string;
+  createdAt?: string;
+  updatedAt?: string;
   details?: any;
 }
 
@@ -33,19 +37,31 @@ export const activityLogService = {
 
   async getAll(params?: ActivityLogParams): Promise<{
     success: boolean;
-    count: number;
-    totalPages: number;
-    currentPage: number;
     data: ActivityLog[];
+    pagination: {
+      total: number;
+      page: number;
+      pages: number;
+      limit: number;
+    };
   }> {
     const response = await apiClient.get<{
       success: boolean;
-      count: number;
-      totalPages: number;
-      currentPage: number;
-      data: ActivityLog[];
+      data: {
+        logs: ActivityLog[];
+        pagination: {
+          total: number;
+          page: number;
+          pages: number;
+          limit: number;
+        };
+      };
     }>(API_ENDPOINTS.ACTIVITY_LOGS.BASE, { params });
-    return response.data;
+    return {
+      success: response.data.success,
+      data: response.data.data.logs || [],
+      pagination: response.data.data.pagination,
+    };
   },
 
   async getStats(params?: { startDate?: string; endDate?: string }): Promise<any> {

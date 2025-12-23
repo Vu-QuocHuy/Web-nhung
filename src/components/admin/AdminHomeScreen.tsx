@@ -38,20 +38,38 @@ export default function AdminHomeScreen() {
   });
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
-  const fetchData = async () => {
+  // Fetch sensor data only (auto refresh)
+  const fetchSensorData = async () => {
     try {
-      // Fetch sensor data
       const latestData = await sensorService.getLatest();
       
+      setStats((prev) => ({
+        ...prev,
+        temperature: latestData.temperature || 0,
+        humidity: latestData.humidity || 0,
+        soilMoisture: latestData.soilMoisture || 0,
+        waterLevel: latestData.waterLevel || 0,
+        light: latestData.light || 0,
+        lastUpdate: new Date(latestData.timestamp || Date.now()),
+      }));
+    } catch (error: any) {
+      console.error('Error fetching sensor data:', error);
+      toast.error('Không thể tải dữ liệu cảm biến: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  // Fetch all other data (one time only)
+  const fetchOtherData = async () => {
+    try {
       // Fetch users
       const usersResponse = await userService.getAll();
-      const totalUsers = usersResponse.count;
-      const totalAdmins = usersResponse.data.filter((u) => u.role === 'admin').length;
+      const totalUsers = usersResponse.pagination?.totalUsers || usersResponse.data?.length || 0;
+      const totalAdmins = usersResponse.data?.filter((u) => u.role === 'admin').length || 0;
 
       // Fetch device status
       const deviceStatus = await deviceService.getStatus();
       const onlineDevices = Object.values(deviceStatus).filter(
-        (device) => device.status === 'ON' || device.status === 'AUTO'
+        (status) => status === 'ON' || status === 'AUTO'
       ).length;
 
       // Fetch schedules
@@ -60,29 +78,24 @@ export default function AdminHomeScreen() {
 
       // Fetch active alerts
       const alertsResponse = await alertService.getAll({ status: 'active', limit: 100 });
-      const activeAlerts = alertsResponse.count;
+      const activeAlerts = alertsResponse.count || 0;
 
       // Fetch recent activities
       const activitiesResponse = await activityLogService.getAll({ limit: 5 });
       const activities = activitiesResponse.data || [];
 
-      setStats({
-        temperature: latestData.temperature || 0,
-        humidity: latestData.humidity || 0,
-        soilMoisture: latestData.soilMoisture || 0,
-        waterLevel: latestData.waterLevel || 0,
-        light: latestData.light || 0,
+      setStats((prev) => ({
+        ...prev,
         totalUsers,
         totalAdmins,
         activeAlerts,
         activeSchedules,
         devicesOnline: onlineDevices,
-        lastUpdate: new Date(latestData.timestamp || Date.now()),
-      });
+      }));
 
-      setRecentActivities(activities.data || []);
+      setRecentActivities(Array.isArray(activities) ? activities : []);
     } catch (error: any) {
-      console.error('Error fetching admin data:', error);
+      console.error('Error fetching other data:', error);
       toast.error('Không thể tải dữ liệu: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
@@ -90,16 +103,25 @@ export default function AdminHomeScreen() {
     }
   };
 
+  // Fetch all data (for manual refresh)
+  const fetchAllData = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchSensorData(), fetchOtherData()]);
+  };
+
   useEffect(() => {
-    fetchData();
-    // Auto refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    // Fetch sensor data immediately and set up auto refresh
+    fetchSensorData();
+    const sensorInterval = setInterval(fetchSensorData, 30000); // Auto refresh sensor every 30 seconds
+
+    // Fetch other data only once on mount
+    fetchOtherData();
+
+    return () => clearInterval(sensorInterval);
   }, []);
 
   const handleRefresh = () => {
-    setRefreshing(true);
-    fetchData();
+    fetchAllData();
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -118,7 +140,7 @@ export default function AdminHomeScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-8 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="mb-2">Quản trị hệ thống</h1>
