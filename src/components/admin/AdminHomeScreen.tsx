@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Thermometer,
   Droplets,
@@ -11,19 +11,35 @@ import {
   Calendar,
   RefreshCw,
   Activity,
-} from 'lucide-react';
-import { sensorService } from '../../services/sensor.service';
-import { deviceService } from '../../services/device.service';
-import { alertService } from '../../services/alert.service';
-import { scheduleService } from '../../services/schedule.service';
-import { userService } from '../../services/user.service';
-import { activityLogService } from '../../services/activityLog.service';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { sensorService } from "../../services/sensor.service";
+import { deviceService } from "../../services/device.service";
+import { alertService } from "../../services/alert.service";
+import { scheduleService } from "../../services/schedule.service";
+import { userService } from "../../services/user.service";
+import { activityLogService } from "../../services/activityLog.service";
+import { toast } from "sonner";
+import ESP32StatusCard from "../ESP32StatusCard";
 
 export default function AdminHomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+
+  type Stats = {
+    temperature: number;
+    humidity: number;
+    soilMoisture: number;
+    waterLevel: number;
+    light: number;
+    totalUsers: number;
+    totalAdmins: number;
+    activeAlerts: number;
+    activeSchedules: number;
+    devicesOnline: number;
+    lastUpdate: Date;
+  };
+
+  const initialStats: Stats = {
     temperature: 0,
     humidity: 0,
     soilMoisture: 0,
@@ -35,15 +51,17 @@ export default function AdminHomeScreen() {
     activeSchedules: 0,
     devicesOnline: 0,
     lastUpdate: new Date(),
-  });
-  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  };
+
+  const [stats, setStats] = useState(initialStats);
+  const [recentActivities, setRecentActivities] = useState([] as any[]);
 
   // Fetch sensor data only (auto refresh)
   const fetchSensorData = async () => {
     try {
       const latestData = await sensorService.getLatest();
-      
-      setStats((prev) => ({
+
+      setStats((prev: Stats) => ({
         ...prev,
         temperature: latestData.temperature ?? 0,
         humidity: latestData.humidity ?? 0,
@@ -53,8 +71,11 @@ export default function AdminHomeScreen() {
         lastUpdate: new Date(latestData.timestamp || Date.now()),
       }));
     } catch (error: any) {
-      console.error('Error fetching sensor data:', error);
-      toast.error('Không thể tải dữ liệu cảm biến: ' + (error.response?.data?.message || error.message));
+      console.error("Error fetching sensor data:", error);
+      toast.error(
+        "Không thể tải dữ liệu cảm biến: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -63,13 +84,15 @@ export default function AdminHomeScreen() {
     try {
       // Fetch users
       const usersResponse = await userService.getAll();
-      const totalUsers = usersResponse.pagination?.totalUsers || usersResponse.data?.length || 0;
-      const totalAdmins = usersResponse.data?.filter((u) => u.role === 'admin').length || 0;
+      const totalUsers =
+        usersResponse.pagination?.totalUsers || usersResponse.data?.length || 0;
+      const totalAdmins =
+        usersResponse.data?.filter((u) => u.role === "admin").length || 0;
 
       // Fetch device status
       const deviceStatus = await deviceService.getStatus();
       const onlineDevices = Object.values(deviceStatus).filter(
-        (status) => status === 'ON' || status === 'AUTO'
+        (status) => status === "ON" || status === "AUTO"
       ).length;
 
       // Fetch schedules
@@ -77,14 +100,17 @@ export default function AdminHomeScreen() {
       const activeSchedules = schedules.filter((s) => s.enabled).length;
 
       // Fetch active alerts
-      const alertsResponse = await alertService.getAll({ status: 'active', limit: 100 });
+      const alertsResponse = await alertService.getAll({
+        status: "active",
+        limit: 100,
+      });
       const activeAlerts = alertsResponse.count || 0;
 
       // Fetch recent activities
       const activitiesResponse = await activityLogService.getAll({ limit: 5 });
       const activities = activitiesResponse.data || [];
 
-      setStats((prev) => ({
+      setStats((prev: Stats) => ({
         ...prev,
         totalUsers,
         totalAdmins,
@@ -95,8 +121,11 @@ export default function AdminHomeScreen() {
 
       setRecentActivities(Array.isArray(activities) ? activities : []);
     } catch (error: any) {
-      console.error('Error fetching other data:', error);
-      toast.error('Không thể tải dữ liệu: ' + (error.response?.data?.message || error.message));
+      console.error("Error fetching other data:", error);
+      toast.error(
+        "Không thể tải dữ liệu: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -131,7 +160,7 @@ export default function AdminHomeScreen() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Vừa xong';
+    if (diffMins < 1) return "Vừa xong";
     if (diffMins < 60) return `${diffMins} phút trước`;
     if (diffHours < 24) return `${diffHours} giờ trước`;
     return `${diffDays} ngày trước`;
@@ -145,7 +174,7 @@ export default function AdminHomeScreen() {
           <div>
             <h1 className="mb-2">Quản trị hệ thống</h1>
             <p className="text-purple-100">
-              Cập nhật lúc: {stats.lastUpdate.toLocaleTimeString('vi-VN')}
+              Cập nhật lúc: {stats.lastUpdate.toLocaleTimeString("vi-VN")}
             </p>
           </div>
           <button
@@ -153,7 +182,9 @@ export default function AdminHomeScreen() {
             disabled={refreshing}
             className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
           >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+            />
             <span>Làm mới</span>
           </button>
         </div>
@@ -161,48 +192,58 @@ export default function AdminHomeScreen() {
 
       {/* Content */}
       <div className="p-8 space-y-6">
-        {/* System Stats */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Activity className="w-6 h-6 text-purple-600" />
-            <h2 className="text-gray-900">Thống kê hệ thống</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            {/* System Stats */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Activity className="w-6 h-6 text-purple-600" />
+                <h2 className="text-gray-900">Thống kê hệ thống</h2>
+              </div>
+              <div className="grid grid-cols-5 gap-4">
+                <div className="text-center p-6 bg-blue-50 rounded-xl hover:shadow-md transition-shadow">
+                  <Users className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    {loading ? "..." : stats.totalUsers}
+                  </div>
+                  <div className="text-gray-600 font-medium">Người dùng</div>
+                </div>
+                <div className="text-center p-6 bg-purple-50 rounded-xl hover:shadow-md transition-shadow">
+                  <Shield className="w-10 h-10 text-purple-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-purple-600 mb-2">
+                    {loading ? "..." : stats.totalAdmins}
+                  </div>
+                  <div className="text-gray-600 font-medium">Quản trị viên</div>
+                </div>
+                <div className="text-center p-6 bg-orange-50 rounded-xl hover:shadow-md transition-shadow">
+                  <AlertTriangle className="w-10 h-10 text-orange-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-orange-600 mb-2">
+                    {loading ? "..." : stats.activeAlerts}
+                  </div>
+                  <div className="text-gray-600 font-medium">Cảnh báo</div>
+                </div>
+                <div className="text-center p-6 bg-green-50 rounded-xl hover:shadow-md transition-shadow">
+                  <Calendar className="w-10 h-10 text-green-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    {loading ? "..." : stats.activeSchedules}
+                  </div>
+                  <div className="text-gray-600 font-medium">Lịch trình</div>
+                </div>
+                <div className="text-center p-6 bg-cyan-50 rounded-xl hover:shadow-md transition-shadow">
+                  <Activity className="w-10 h-10 text-cyan-600 mx-auto mb-3" />
+                  <div className="text-3xl font-bold text-cyan-600 mb-2">
+                    {loading ? "..." : `${stats.devicesOnline}/8`}
+                  </div>
+                  <div className="text-gray-600 font-medium">
+                    Thiết bị online
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-5 gap-4">
-            <div className="text-center p-6 bg-blue-50 rounded-xl hover:shadow-md transition-shadow">
-              <Users className="w-10 h-10 text-blue-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {loading ? '...' : stats.totalUsers}
-              </div>
-              <div className="text-gray-600 font-medium">Người dùng</div>
-            </div>
-            <div className="text-center p-6 bg-purple-50 rounded-xl hover:shadow-md transition-shadow">
-              <Shield className="w-10 h-10 text-purple-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {loading ? '...' : stats.totalAdmins}
-              </div>
-              <div className="text-gray-600 font-medium">Quản trị viên</div>
-            </div>
-            <div className="text-center p-6 bg-orange-50 rounded-xl hover:shadow-md transition-shadow">
-              <AlertTriangle className="w-10 h-10 text-orange-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-orange-600 mb-2">
-                {loading ? '...' : stats.activeAlerts}
-              </div>
-              <div className="text-gray-600 font-medium">Cảnh báo</div>
-            </div>
-            <div className="text-center p-6 bg-green-50 rounded-xl hover:shadow-md transition-shadow">
-              <Calendar className="w-10 h-10 text-green-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {loading ? '...' : stats.activeSchedules}
-              </div>
-              <div className="text-gray-600 font-medium">Lịch trình</div>
-            </div>
-            <div className="text-center p-6 bg-cyan-50 rounded-xl hover:shadow-md transition-shadow">
-              <Activity className="w-10 h-10 text-cyan-600 mx-auto mb-3" />
-              <div className="text-3xl font-bold text-cyan-600 mb-2">
-                {loading ? '...' : `${stats.devicesOnline}/8`}
-              </div>
-              <div className="text-gray-600 font-medium">Thiết bị online</div>
-            </div>
+
+          <div className="md:col-span-1">
+            <ESP32StatusCard />
           </div>
         </div>
 
@@ -212,63 +253,81 @@ export default function AdminHomeScreen() {
           <div className="grid grid-cols-3 gap-6">
             {[
               {
-                label: 'Nhiệt độ',
-                value: loading || stats.temperature === undefined || stats.temperature === null
-                  ? '...'
-                  : `${Number(stats.temperature).toFixed(1)}°C`,
+                label: "Nhiệt độ",
+                value:
+                  loading ||
+                  stats.temperature === undefined ||
+                  stats.temperature === null
+                    ? "..."
+                    : `${Number(stats.temperature).toFixed(1)}°C`,
                 icon: Thermometer,
-                color: 'red',
+                color: "red",
               },
               {
-                label: 'Độ ẩm không khí',
-                value: loading || stats.humidity === undefined || stats.humidity === null
-                  ? '...'
-                  : `${Number(stats.humidity).toFixed(1)}%`,
+                label: "Độ ẩm không khí",
+                value:
+                  loading ||
+                  stats.humidity === undefined ||
+                  stats.humidity === null
+                    ? "..."
+                    : `${Number(stats.humidity).toFixed(1)}%`,
                 icon: Droplets,
-                color: 'blue',
+                color: "blue",
               },
               {
-                label: 'Độ ẩm đất',
-                value: loading || stats.soilMoisture === undefined || stats.soilMoisture === null
-                  ? '...'
-                  : `${Number(stats.soilMoisture).toFixed(1)}%`,
+                label: "Độ ẩm đất",
+                value:
+                  loading ||
+                  stats.soilMoisture === undefined ||
+                  stats.soilMoisture === null
+                    ? "..."
+                    : `${Number(stats.soilMoisture).toFixed(1)}%`,
                 icon: Sprout,
-                color: 'green',
+                color: "green",
               },
               {
-                label: 'Mực nước',
-                value: loading || stats.waterLevel === undefined || stats.waterLevel === null
-                  ? '...'
-                  : `${Number(stats.waterLevel).toFixed(1)}%`,
+                label: "Mực nước",
+                value:
+                  loading ||
+                  stats.waterLevel === undefined ||
+                  stats.waterLevel === null
+                    ? "..."
+                    : `${Number(stats.waterLevel).toFixed(1)}%`,
                 icon: Waves,
-                color: 'cyan',
+                color: "cyan",
               },
               {
-                label: 'Ánh sáng',
-                value: loading || stats.light === undefined || stats.light === null
-                  ? '...'
-                  : `${Math.round(Number(stats.light))} lux`,
+                label: "Ánh sáng",
+                value:
+                  loading || stats.light === undefined || stats.light === null
+                    ? "..."
+                    : `${Math.round(Number(stats.light))} lux`,
                 icon: Sun,
-                color: 'yellow',
+                color: "yellow",
               },
             ].map((item, index) => {
               const Icon = item.icon;
               const colorMap: Record<string, { text: string; bg: string }> = {
-                red: { text: 'text-red-600', bg: 'bg-red-50' },
-                blue: { text: 'text-blue-600', bg: 'bg-blue-50' },
-                green: { text: 'text-green-600', bg: 'bg-green-50' },
-                cyan: { text: 'text-cyan-600', bg: 'bg-cyan-50' },
-                yellow: { text: 'text-yellow-600', bg: 'bg-yellow-50' },
+                red: { text: "text-red-600", bg: "bg-red-50" },
+                blue: { text: "text-blue-600", bg: "bg-blue-50" },
+                green: { text: "text-green-600", bg: "bg-green-50" },
+                cyan: { text: "text-cyan-600", bg: "bg-cyan-50" },
+                yellow: { text: "text-yellow-600", bg: "bg-yellow-50" },
               };
               const colors = colorMap[item.color];
               return (
-                <div key={index} className="flex items-center gap-4 p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow">
+                <div
+                  key={index}
+                  className="flex items-center gap-4 p-6 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
+                >
                   <div className={`${colors.bg} p-4 rounded-xl`}>
                     <Icon className={`w-8 h-8 ${colors.text}`} />
                   </div>
                   <div>
                     <div className="text-gray-600 mb-1">{item.label}</div>
-                    <div className="text-2xl font-bold text-gray-900">{item.value}</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {item.value}
+                    </div>
                   </div>
                 </div>
               );
@@ -282,8 +341,11 @@ export default function AdminHomeScreen() {
           <div className="space-y-3">
             {loading ? (
               <div className="text-center py-8 text-gray-500">Đang tải...</div>
-            ) : !Array.isArray(recentActivities) || recentActivities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">Không có hoạt động nào</div>
+            ) : !Array.isArray(recentActivities) ||
+              recentActivities.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Không có hoạt động nào
+              </div>
             ) : (
               recentActivities.map((activity) => {
                 const date = new Date(activity.timestamp);
@@ -296,12 +358,14 @@ export default function AdminHomeScreen() {
                     <div className="flex-1">
                       <div className="text-gray-900">
                         <span className="text-purple-600 font-medium">
-                          {activity.username || 'System'}
-                        </span>{' '}
+                          {activity.username || "System"}
+                        </span>{" "}
                         {activity.action}: <strong>{activity.target}</strong>
                       </div>
                     </div>
-                    <div className="text-sm text-gray-500 font-medium">{timeAgo}</div>
+                    <div className="text-sm text-gray-500 font-medium">
+                      {timeAgo}
+                    </div>
                   </div>
                 );
               })

@@ -13,56 +13,59 @@ export const API_CONFIG = {
 export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    CHANGE_PASSWORD: '/auth/change-password',
+    LOGIN: "/auth/login",
+    REGISTER: "/auth/register",
+    REFRESH: "/auth/refresh",
+    LOGOUT: "/auth/logout",
+    CHANGE_PASSWORD: "/auth/change-password",
   },
   // Users
   USERS: {
-    BASE: '/users',
+    BASE: "/users",
     BY_ID: (id: string) => `/users/${id}`,
     TOGGLE_STATUS: (id: string) => `/users/${id}/toggle-status`,
   },
   // Sensors
   SENSORS: {
-    BASE: '/sensors',
-    LATEST: '/sensors/latest',
-    HISTORY: '/sensors/history',
-    CLEANUP: '/sensors/cleanup',
+    BASE: "/sensors",
+    LATEST: "/sensors/latest",
+    HISTORY: "/sensors/history",
+    CLEANUP: "/sensors/cleanup",
   },
   // Devices
   DEVICES: {
-    CONTROL: '/devices/control',
-    STATUS: '/devices/status',
-    HISTORY: '/devices/history',
+    CONTROL: "/devices/control",
+    STATUS: "/devices/status",
+    HISTORY: "/devices/history",
   },
   // Alerts
   ALERTS: {
-    BASE: '/alerts',
-    UNREAD: '/alerts/unread',
+    BASE: "/alerts",
+    UNREAD: "/alerts/unread",
     BY_ID: (id: string) => `/alerts/${id}`,
     READ: (id: string) => `/alerts/${id}/read`,
     RESOLVE: (id: string) => `/alerts/${id}/resolve`,
   },
   // Thresholds
   THRESHOLDS: {
-    BASE: '/thresholds',
+    BASE: "/thresholds",
     BY_TYPE: (type: string) => `/thresholds/${type}`,
     TOGGLE: (type: string) => `/thresholds/${type}/toggle`,
   },
   // Schedules
   SCHEDULES: {
-    BASE: '/schedules',
+    BASE: "/schedules",
     BY_ID: (id: string) => `/schedules/${id}`,
     TOGGLE: (id: string) => `/schedules/${id}/toggle`,
   },
   // Activity Logs
   ACTIVITY_LOGS: {
-    BASE: '/activity-logs',
-    MY_LOGS: '/activity-logs/my-logs',
-    STATS: '/activity-logs/stats',
+    BASE: "/activity-logs",
+    MY_LOGS: "/activity-logs/my-logs",
+    STATS: "/activity-logs/stats",
+  },
+  // ESP32
+  ESP32: {
+    STATUS: "/esp32/status",
   },
 };
-
