@@ -1,0 +1,281 @@
+import React, { useState, useEffect } from 'react';
+import { RefreshCw, Droplets, Fan, Lightbulb, RotateCcw, Zap } from 'lucide-react';
+import { deviceService, DeviceStatusResponse } from '../../services/device.service';
+import { toast } from 'sonner';
+
+interface Device {
+  id: string;
+  name: string;
+  displayName: string;
+  icon: any;
+  status: 'ON' | 'OFF' | 'AUTO';
+  color: string;
+}
+
+const DEVICE_CONFIG: Record<string, Omit<Device, 'status'>> = {
+  pump: {
+    id: 'pump',
+    name: 'pump',
+    displayName: 'Bơm nước',
+    icon: Droplets,
+    color: 'blue',
+  },
+  fan: {
+    id: 'fan',
+    name: 'fan',
+    displayName: 'Quạt',
+    icon: Fan,
+    color: 'cyan',
+  },
+  light: {
+    id: 'light',
+    name: 'light',
+    displayName: 'Đèn',
+    icon: Lightbulb,
+    color: 'yellow',
+  },
+  servo: {
+    id: 'servo',
+    name: 'servo',
+    displayName: 'Servo',
+    icon: RotateCcw,
+    color: 'purple',
+  },
+  servo1: {
+    id: 'servo1',
+    name: 'servo1',
+    displayName: 'Servo 1',
+    icon: RotateCcw,
+    color: 'purple',
+  },
+  servo2: {
+    id: 'servo2',
+    name: 'servo2',
+    displayName: 'Servo 2',
+    icon: RotateCcw,
+    color: 'purple',
+  },
+  led1: {
+    id: 'led1',
+    name: 'led1',
+    displayName: 'LED 1',
+    icon: Zap,
+    color: 'orange',
+  },
+  led2: {
+    id: 'led2',
+    name: 'led2',
+    displayName: 'LED 2',
+    icon: Zap,
+    color: 'orange',
+  },
+  led3: {
+    id: 'led3',
+    name: 'led3',
+    displayName: 'LED 3',
+    icon: Zap,
+    color: 'orange',
+  },
+};
+
+export default function DeviceControlScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [devices, setDevices] = useState<Device[]>([]);
+
+  const fetchDeviceStatus = async () => {
+    try {
+      const statusData = await deviceService.getStatus();
+      
+      // Convert response data to devices array
+      const devicesWithStatus: Device[] = Object.entries(statusData).map(([deviceName, status]) => {
+        const config = DEVICE_CONFIG[deviceName];
+        if (config) {
+          return {
+            ...config,
+            status: status as 'ON' | 'OFF' | 'AUTO',
+          };
+        }
+        // Fallback for unknown devices
+        return {
+          id: deviceName,
+          name: deviceName,
+          displayName: deviceName,
+          icon: Zap,
+          status: status as 'ON' | 'OFF' | 'AUTO',
+          color: 'gray',
+        };
+      });
+
+      setDevices(devicesWithStatus);
+    } catch (error: any) {
+      console.error('Error fetching device status:', error);
+      toast.error('Không thể tải trạng thái thiết bị: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeviceStatus();
+  }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchDeviceStatus();
+  };
+
+  const toggleDevice = async (device: Device) => {
+    try {
+      const newAction = device.status === 'ON' ? 'OFF' : 'ON';
+      await deviceService.controlDevice({
+        deviceName: device.name as 'pump' | 'fan' | 'light' | 'servo' | 'servo1' | 'servo2' | 'led1' | 'led2' | 'led3',
+        action: newAction,
+      });
+
+      // Update local state
+      setDevices((prev) =>
+        prev.map((d) =>
+          d.id === device.id ? { ...d, status: newAction } : d
+        )
+      );
+
+      toast.success(`${device.displayName} đã được ${newAction === 'ON' ? 'bật' : 'tắt'}`);
+    } catch (error: any) {
+      console.error('Error controlling device:', error);
+      toast.error('Không thể điều khiển thiết bị: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const getColorClasses = (color: string, isActive: boolean) => {
+    const colorMap: Record<string, { icon: string; bg: string; border: string }> = {
+      blue: {
+        icon: 'text-blue-600',
+        bg: 'bg-blue-50',
+        border: 'border-blue-200',
+      },
+      cyan: {
+        icon: 'text-cyan-600',
+        bg: 'bg-cyan-50',
+        border: 'border-cyan-200',
+      },
+      yellow: {
+        icon: 'text-yellow-600',
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-200',
+      },
+      red: {
+        icon: 'text-red-600',
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+      },
+      green: {
+        icon: 'text-green-600',
+        bg: 'bg-green-50',
+        border: 'border-green-200',
+      },
+      purple: {
+        icon: 'text-purple-600',
+        bg: 'bg-purple-50',
+        border: 'border-purple-200',
+      },
+      orange: {
+        icon: 'text-orange-600',
+        bg: 'bg-orange-50',
+        border: 'border-orange-200',
+      },
+      pink: {
+        icon: 'text-pink-600',
+        bg: 'bg-pink-50',
+        border: 'border-pink-200',
+      },
+      gray: {
+        icon: 'text-gray-600',
+        bg: 'bg-gray-50',
+        border: 'border-gray-200',
+      },
+    };
+    return isActive
+      ? colorMap[color] || colorMap.gray
+      : { icon: 'text-gray-400', bg: 'bg-gray-50', border: 'border-gray-200' };
+  };
+
+  return (
+    <div className="h-full">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-gray-900">Điều khiển thiết bị</h1>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw
+              className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+            />
+            <span>Làm mới</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-600">Đang tải...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-6">
+            {devices.map((device) => {
+              const Icon = device.icon;
+              const isActive = device.status === 'ON' || device.status === 'AUTO';
+              const colors = getColorClasses(device.color, isActive);
+              return (
+                <div
+                  key={device.id}
+                  className={`bg-white rounded-xl shadow-sm border-2 ${
+                    colors.border
+                  } p-6 hover:shadow-md transition-all`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`${colors.bg} p-4 rounded-xl`}>
+                      <Icon className={`w-8 h-8 ${colors.icon}`} />
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        isActive
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {device.status === 'AUTO' ? 'Tự động' : device.status === 'ON' ? 'Hoạt động' : 'Tắt'}
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="text-gray-900 font-medium mb-1">{device.displayName}</div>
+                    <div className="text-gray-500 text-sm">ID: {device.name}</div>
+                  </div>
+
+                  <button
+                    onClick={() => toggleDevice(device)}
+                    disabled={device.status === 'AUTO'}
+                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                      isActive
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {device.status === 'AUTO' ? 'Tự động' : isActive ? 'Tắt' : 'Bật'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
