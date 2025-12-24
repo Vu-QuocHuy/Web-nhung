@@ -147,8 +147,10 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-        <div>
-            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Lịch sử hoạt động</h1>
+          <div className="h-[44px] flex items-center">
+            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+              Lịch sử hoạt động
+            </h1>
           </div>
           <button
             onClick={handleRefresh}

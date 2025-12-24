@@ -81,9 +81,13 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
               <Leaf className="w-6 h-6 text-white" />
             </div>
             {isSidebarOpen && (
-              <div>
-                <h2 className="text-gray-900">Nông Trại</h2>
-                <p className="text-sm text-purple-600 font-medium">Quản Trị</p>
+              <div className="h-[40px] flex flex-col justify-center leading-none">
+                <span className="text-sm font-semibold text-gray-900">
+                  Nông Trại
+                </span>
+                <span className="text-sm font-semibold text-purple-600">
+                  Thông Minh
+                </span>
               </div>
             )}
           </button>

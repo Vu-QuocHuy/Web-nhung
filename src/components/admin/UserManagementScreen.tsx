@@ -171,13 +171,13 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>Làm mới</span>
             </button>
-          <button
-            onClick={() => setShowAddDialog(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Thêm người dùng</span>
-          </button>
+            <button
+              onClick={() => setShowAddDialog(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Thêm người dùng</span>
+            </button>
           </div>
         </div>
       </div>
@@ -284,9 +284,19 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
                     </span>
                   </div>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <div>📧 {user.email}</div>
-                      {user.phone && <div>📱 {user.phone}</div>}
-                      {user.address && <div>📍 {user.address}</div>}
+                    <div>
+                      <span className="font-medium">Email:</span> {user.email}
+                    </div>
+                    {user.phone && (
+                      <div>
+                        <span className="font-medium">Số điện thoại:</span> {user.phone}
+                      </div>
+                    )}
+                    {user.address && (
+                      <div>
+                        <span className="font-medium">Địa chỉ:</span> {user.address}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

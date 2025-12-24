@@ -16,6 +16,7 @@ import { deviceService } from "../../services/device.service";
 import { alertService } from "../../services/alert.service";
 import { scheduleService } from "../../services/schedule.service";
 import { toast } from "sonner";
+import ESP32StatusCard from "../ESP32StatusCard";
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -159,15 +160,14 @@ export default function HomeScreen() {
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Trang chủ</h1>
-            <p className="text-gray-500">
-              Cập nhật lúc: {sensorData.lastUpdate.toLocaleTimeString("vi-VN")}
-            </p>
+            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+              Trang chủ
+            </h1>
           </div>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
@@ -215,6 +215,9 @@ export default function HomeScreen() {
           </div>
         </div>
 
+        {/* ESP32 Status */}
+        <ESP32StatusCard />
+
         {/* Sensor Cards Grid */}
         <div className="grid grid-cols-3 gap-6">
           {statCards.map((stat, index) => {
@@ -236,37 +239,6 @@ export default function HomeScreen() {
               </div>
             );
           })}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-gray-900 mb-4">Thao tác nhanh</h2>
-          <div className="grid grid-cols-4 gap-4">
-            <button className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all group">
-              <div className="bg-blue-100 p-4 rounded-xl group-hover:bg-blue-200 transition-colors">
-                <Droplets className="w-8 h-8 text-blue-600" />
-              </div>
-              <span className="font-medium text-gray-700">Bơm nước</span>
-            </button>
-            <button className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all group">
-              <div className="bg-green-100 p-4 rounded-xl group-hover:bg-green-200 transition-colors">
-                <Activity className="w-8 h-8 text-green-600" />
-              </div>
-              <span className="font-medium text-gray-700">Quạt</span>
-            </button>
-            <button className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:bg-yellow-50 transition-all group">
-              <div className="bg-yellow-100 p-4 rounded-xl group-hover:bg-yellow-200 transition-colors">
-                <Sun className="w-8 h-8 text-yellow-600" />
-              </div>
-              <span className="font-medium text-gray-700">Đèn</span>
-            </button>
-            <button className="flex flex-col items-center gap-3 p-6 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all group">
-              <div className="bg-purple-100 p-4 rounded-xl group-hover:bg-purple-200 transition-colors">
-                <History className="w-8 h-8 text-purple-600" />
-              </div>
-              <span className="font-medium text-gray-700">Lịch sử</span>
-            </button>
-          </div>
         </div>
       </div>
     </div>

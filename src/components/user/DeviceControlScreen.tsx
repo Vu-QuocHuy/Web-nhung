@@ -239,7 +239,7 @@ export default function DeviceControlScreen() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}

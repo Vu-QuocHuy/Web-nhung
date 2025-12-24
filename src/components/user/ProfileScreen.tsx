@@ -121,46 +121,35 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Quản lý tài khoản cá nhân</h1>
+      <div className="bg-white border-b border-gray-200 px-6 py-8">
+        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+          Quản lý tài khoản cá nhân
+        </h1>
       </div>
 
       {/* Content */}
       <div className="p-8 space-y-6">
-        {/* User Profile Card */}
-        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl shadow-sm p-8 text-white">
-          <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="bg-white/20 w-24 h-24 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <User className="w-12 h-12" />
-          </div>
-          <div>
-                <h2 className="text-2xl font-semibold mb-2">{user.name}</h2>
-            <p className="text-green-100 text-lg">{user.email}</p>
-          </div>
-            </div>
+        {/* Account Info */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-gray-900">Thông tin tài khoản</h2>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowEditProfile(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
               >
-                <Edit className="w-5 h-5" />
+                <Edit className="w-4 h-4" />
                 <span>Chỉnh sửa</span>
               </button>
               <button
                 onClick={() => setShowChangePassword(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
-                <Lock className="w-5 h-5" />
+                <Lock className="w-4 h-4" />
                 <span>Đổi mật khẩu</span>
               </button>
             </div>
-        </div>
-      </div>
-
-        {/* Account Info */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-gray-900 mb-6">Thông tin tài khoản</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
               <div className="bg-blue-100 p-3 rounded-lg">

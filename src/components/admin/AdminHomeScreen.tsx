@@ -168,7 +168,7 @@ export default function AdminHomeScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-6 border-b border-gray-200">
+      <div className="bg-white text-gray-900 px-6 py-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-semibold leading-[44px]">Quản trị hệ thống</h1>
@@ -176,7 +176,7 @@ export default function AdminHomeScreen() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw
               className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
@@ -328,44 +328,6 @@ export default function AdminHomeScreen() {
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-gray-900 mb-6">Hoạt động gần đây</h2>
-          <div className="space-y-3">
-            {loading ? (
-              <div className="text-center py-8 text-gray-500">Đang tải...</div>
-            ) : !Array.isArray(recentActivities) ||
-              recentActivities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Không có hoạt động nào
-              </div>
-            ) : (
-              recentActivities.map((activity) => {
-                const date = new Date(activity.timestamp);
-                const timeAgo = formatTimeAgo(date);
-                return (
-                  <div
-                    key={activity._id}
-                    className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="text-gray-900">
-                        <span className="text-purple-600 font-medium">
-                          {activity.username || "System"}
-                        </span>{" "}
-                        {activity.action}: <strong>{activity.target}</strong>
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-500 font-medium">
-                      {timeAgo}
-                    </div>
-                  </div>
-                );
-              })
-            )}
           </div>
         </div>
       </div>

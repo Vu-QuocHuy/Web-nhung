@@ -1,22 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw, ChevronDown } from 'lucide-react';
 import { alertService, Alert } from '../../services/alert.service';
 import { toast } from 'sonner';
 
 export default function NotificationsScreen() {
-  const [filter, setFilter] = useState<'all' | 'unresolved'>('all');
+  const [filterMode, setFilterMode] = useState<'status' | 'severity'>('status');
+  const [filter, setFilter] = useState<'all' | 'resolved' | 'unresolved'>('all');
+  const [severityFilter, setSeverityFilter] = useState<'all' | 'critical' | 'warning' | 'info'>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Alert[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showValueDropdown, setShowValueDropdown] = useState(false);
+  const typeDropdownRef = useRef<HTMLDivElement>(null);
+  const valueDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchAlerts = async () => {
     try {
       setLoading(true);
       const params: any = { limit: 20, page };
-      if (filter === 'unresolved') {
-        params.status = 'active';
+      if (filterMode === 'status') {
+        if (filter === 'unresolved') {
+          params.status = 'active';
+        } else if (filter === 'resolved') {
+          params.status = 'resolved';
+        }
+      }
+      if (filterMode === 'severity' && severityFilter !== 'all') {
+        params.severity = severityFilter;
       }
       const response = await alertService.getAll(params);
       setNotifications(response.data);
@@ -32,7 +45,21 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     fetchAlerts();
-  }, [filter, page]);
+  }, [filterMode, filter, severityFilter, page]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target as Node)) {
+        setShowTypeDropdown(false);
+      }
+      if (valueDropdownRef.current && !valueDropdownRef.current.contains(event.target as Node)) {
+        setShowValueDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleResolve = async (id: string) => {
     try {
@@ -46,9 +73,51 @@ export default function NotificationsScreen() {
     }
   };
 
-  const filteredNotifications = notifications.filter((n) =>
-    filter === 'all' ? true : n.status === 'active'
-  );
+  const filteredNotifications = notifications.filter((n) => {
+    if (filterMode === 'status') {
+      if (filter === 'all') return true;
+      if (filter === 'unresolved') return n.status === 'active';
+      if (filter === 'resolved') return n.status === 'resolved';
+    } else {
+      if (severityFilter === 'all') return true;
+      return (n.severity || 'info') === severityFilter;
+    }
+    return true;
+  });
+
+  const getCurrentValueLabel = () => {
+    if (filterMode === 'status') {
+      if (filter === 'all') return 'Tất cả';
+      if (filter === 'unresolved') return 'Chưa xử lý';
+      if (filter === 'resolved') return 'Đã xử lý';
+    } else {
+      if (severityFilter === 'all') return 'Tất cả';
+      if (severityFilter === 'critical') return 'Nghiêm trọng';
+      if (severityFilter === 'warning') return 'Cảnh báo';
+      if (severityFilter === 'info') return 'Thông tin';
+    }
+    return 'Tất cả';
+  };
+
+  const handleTypeChange = (type: 'status' | 'severity') => {
+    setFilterMode(type);
+    if (type === 'status') {
+      setFilter('all');
+    } else {
+      setSeverityFilter('all');
+    }
+    setShowTypeDropdown(false);
+  };
+
+  const handleStatusChange = (value: 'all' | 'resolved' | 'unresolved') => {
+    setFilter(value);
+    setShowValueDropdown(false);
+  };
+
+  const handleSeverityChange = (value: 'all' | 'critical' | 'warning' | 'info') => {
+    setSeverityFilter(value);
+    setShowValueDropdown(false);
+  };
 
   const formatMessage = (message?: string) => {
     if (!message) return '';
@@ -127,7 +196,7 @@ export default function NotificationsScreen() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
             <span>Làm mới</span>
@@ -141,28 +210,120 @@ export default function NotificationsScreen() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-4">
             <Filter className="w-5 h-5 text-gray-600" />
-            <span className="text-gray-900 font-medium">Bộ lọc:</span>
-            <div className="flex gap-3">
+            
+            {/* Loại Dropdown */}
+            <div className="relative" ref={typeDropdownRef}>
               <button
-                onClick={() => setFilter('all')}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'all'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                onClick={() => {
+                  setShowTypeDropdown(!showTypeDropdown);
+                  setShowValueDropdown(false);
+                }}
+                className="flex items-center gap-2 px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium whitespace-nowrap min-w-[140px] justify-between"
               >
-                Tất cả ({notifications.length})
+                <span>Loại</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showTypeDropdown ? 'rotate-180' : ''}`} />
               </button>
+              {showTypeDropdown && (
+                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
+                  <button
+                    onClick={() => handleTypeChange('status')}
+                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                      filterMode === 'status' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    Trạng thái
+                  </button>
+                  <button
+                    onClick={() => handleTypeChange('severity')}
+                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors rounded-b-lg whitespace-nowrap ${
+                      filterMode === 'severity' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                    }`}
+                  >
+                    Mức độ
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Value Dropdown */}
+            <div className="relative" ref={valueDropdownRef}>
               <button
-                onClick={() => setFilter('unresolved')}
-                className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                  filter === 'unresolved'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                onClick={() => {
+                  setShowValueDropdown(!showValueDropdown);
+                  setShowTypeDropdown(false);
+                }}
+                className="flex items-center gap-2 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium whitespace-nowrap min-w-[160px] justify-between"
               >
-                Chưa xử lý ({notifications.filter((n) => n.status === 'active').length})
+                <span>{getCurrentValueLabel()}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${showValueDropdown ? 'rotate-180' : ''}`} />
               </button>
+              {showValueDropdown && (
+                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[180px]">
+                  {filterMode === 'status' ? (
+                    <>
+                      <button
+                        onClick={() => handleStatusChange('all')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                          filter === 'all' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange('resolved')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                          filter === 'resolved' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Đã xử lý
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange('unresolved')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors rounded-b-lg whitespace-nowrap ${
+                          filter === 'unresolved' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Chưa xử lý
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleSeverityChange('all')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                          severityFilter === 'all' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      <button
+                        onClick={() => handleSeverityChange('critical')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                          severityFilter === 'critical' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Nghiêm trọng
+                      </button>
+                      <button
+                        onClick={() => handleSeverityChange('warning')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors whitespace-nowrap ${
+                          severityFilter === 'warning' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Cảnh báo
+                      </button>
+                      <button
+                        onClick={() => handleSeverityChange('info')}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors rounded-b-lg whitespace-nowrap ${
+                          severityFilter === 'info' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        Thông tin
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -201,8 +362,8 @@ export default function NotificationsScreen() {
                             <span
                               className={`text-xs px-3 py-1 rounded-full font-medium ${
                                 notification.status === 'resolved'
-                                  ? 'bg-gray-100 text-gray-700'
-                                  : 'bg-green-100 text-green-700'
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-red-100 text-red-700'
                               }`}
                             >
                               {notification.status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý'}

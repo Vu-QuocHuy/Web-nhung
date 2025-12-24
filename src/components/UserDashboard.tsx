@@ -59,9 +59,13 @@ export default function UserDashboard({ user, onLogout }: UserDashboardProps) {
               <Leaf className="w-6 h-6 text-green-600" />
             </div>
             {isSidebarOpen && (
-              <div>
-                <h2 className="text-gray-900">Nông Trại</h2>
-                <p className="text-sm text-gray-500">Thông Minh</p>
+              <div className="h-[40px] flex flex-col justify-center leading-none">
+                <span className="text-sm font-semibold text-gray-900">
+                  Nông Trại
+                </span>
+                <span className="text-sm font-semibold text-gray-600">
+                  Thông Minh
+                </span>
               </div>
             )}
           </button>

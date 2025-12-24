@@ -62,7 +62,7 @@ export const authService = {
   },
 
   async changePassword(data: ChangePasswordData): Promise<{ success: boolean; message: string }> {
-    const response = await apiClient.post<{ success: boolean; message: string }>(
+    const response = await apiClient.put<{ success: boolean; message: string }>(
       API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
       data
     );
