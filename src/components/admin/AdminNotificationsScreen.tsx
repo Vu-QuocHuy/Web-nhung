@@ -220,7 +220,7 @@ export default function AdminNotificationsScreen() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900 text-lg font-semibold leading-tight">Thông báo (Admin)</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Thông báo (Admin)</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}

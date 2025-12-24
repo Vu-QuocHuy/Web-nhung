@@ -197,7 +197,7 @@ export default function SchedulesScreen() {
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Quản lý lịch trình</h1>
+            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Quản lý lịch trình</h1>
           </div>
           <div className="flex items-center gap-3">
             <button

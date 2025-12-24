@@ -122,7 +122,7 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <h1 className="text-gray-900 text-lg font-semibold leading-tight">Quản lý tài khoản cá nhân</h1>
+        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Quản lý tài khoản cá nhân</h1>
       </div>
 
       {/* Content */}

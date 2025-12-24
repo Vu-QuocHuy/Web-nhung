@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Thermometer,
   Droplets,
@@ -10,12 +10,12 @@ import {
   Activity,
   RefreshCw,
   History,
-} from 'lucide-react';
-import { sensorService } from '../../services/sensor.service';
-import { deviceService } from '../../services/device.service';
-import { alertService } from '../../services/alert.service';
-import { scheduleService } from '../../services/schedule.service';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { sensorService } from "../../services/sensor.service";
+import { deviceService } from "../../services/device.service";
+import { alertService } from "../../services/alert.service";
+import { scheduleService } from "../../services/schedule.service";
+import { toast } from "sonner";
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -51,7 +51,7 @@ export default function HomeScreen() {
       // Fetch device status
       const deviceStatus = await deviceService.getStatus();
       const onlineDevices = Object.values(deviceStatus).filter(
-        (status) => status === 'ON' || status === 'AUTO'
+        (status) => status === "ON" || status === "AUTO"
       ).length;
 
       // Fetch schedules
@@ -68,8 +68,11 @@ export default function HomeScreen() {
         activeAlerts: unreadAlerts.length,
       });
     } catch (error: any) {
-      console.error('Error fetching data:', error);
-      toast.error('Không thể tải dữ liệu: ' + (error.response?.data?.message || error.message));
+      console.error("Error fetching data:", error);
+      toast.error(
+        "Không thể tải dữ liệu: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -90,49 +93,63 @@ export default function HomeScreen() {
 
   const statCards = [
     {
-      label: 'Nhiệt độ',
-      value: loading || sensorData.temperature === undefined || sensorData.temperature === null
-        ? '...'
-        : `${Number(sensorData.temperature).toFixed(1)}°C`,
+      label: "Nhiệt độ",
+      value:
+        loading ||
+        sensorData.temperature === undefined ||
+        sensorData.temperature === null
+          ? "..."
+          : `${Number(sensorData.temperature).toFixed(1)}°C`,
       icon: Thermometer,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: "text-red-600",
+      bgColor: "bg-red-50",
     },
     {
-      label: 'Độ ẩm không khí',
-      value: loading || sensorData.humidity === undefined || sensorData.humidity === null
-        ? '...'
-        : `${Number(sensorData.humidity).toFixed(1)}%`,
+      label: "Độ ẩm không khí",
+      value:
+        loading ||
+        sensorData.humidity === undefined ||
+        sensorData.humidity === null
+          ? "..."
+          : `${Number(sensorData.humidity).toFixed(1)}%`,
       icon: Droplets,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
     },
     {
-      label: 'Độ ẩm đất',
-      value: loading || sensorData.soilMoisture === undefined || sensorData.soilMoisture === null
-        ? '...'
-        : `${Number(sensorData.soilMoisture).toFixed(1)}%`,
+      label: "Độ ẩm đất",
+      value:
+        loading ||
+        sensorData.soilMoisture === undefined ||
+        sensorData.soilMoisture === null
+          ? "..."
+          : `${Number(sensorData.soilMoisture).toFixed(1)}%`,
       icon: Sprout,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
+      color: "text-green-600",
+      bgColor: "bg-green-50",
     },
     {
-      label: 'Mực nước',
-      value: loading || sensorData.waterLevel === undefined || sensorData.waterLevel === null
-        ? '...'
-        : `${Number(sensorData.waterLevel).toFixed(1)} cm`,
+      label: "Mực nước",
+      value:
+        loading ||
+        sensorData.waterLevel === undefined ||
+        sensorData.waterLevel === null
+          ? "..."
+          : `${Number(sensorData.waterLevel).toFixed(1)} cm`,
       icon: Waves,
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-50',
+      color: "text-cyan-600",
+      bgColor: "bg-cyan-50",
     },
     {
+
       label: 'Ánh sáng',
       value: loading || sensorData.light === undefined || sensorData.light === null
         ? '...'
         : `${Math.round(Number(sensorData.light))}%`,
+
       icon: Sun,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50",
     },
   ];
 
@@ -142,9 +159,9 @@ export default function HomeScreen() {
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Trang chủ</h1>
+            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Trang chủ</h1>
             <p className="text-gray-500">
-              Cập nhật lúc: {sensorData.lastUpdate.toLocaleTimeString('vi-VN')}
+              Cập nhật lúc: {sensorData.lastUpdate.toLocaleTimeString("vi-VN")}
             </p>
           </div>
           <button
@@ -153,7 +170,7 @@ export default function HomeScreen() {
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
           >
             <RefreshCw
-              className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
             />
             <span>Làm mới</span>
           </button>
@@ -170,24 +187,28 @@ export default function HomeScreen() {
           </div>
           <div className="grid grid-cols-4 gap-6">
             <div className="text-center p-4 bg-green-50 rounded-xl">
-              <div className="text-2xl font-bold text-green-600 mb-1">Hoạt động</div>
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                Hoạt động
+              </div>
               <div className="text-gray-600">Hệ thống</div>
             </div>
             <div className="text-center p-4 bg-blue-50 rounded-xl">
               <div className="text-2xl font-bold text-blue-600 mb-1">
-                {loading ? '...' : `${systemStats.devicesOnline}/${systemStats.totalDevices}`}
+                {loading
+                  ? "..."
+                  : `${systemStats.devicesOnline}/${systemStats.totalDevices}`}
               </div>
               <div className="text-gray-600">Thiết bị bật</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-xl">
               <div className="text-2xl font-bold text-purple-600 mb-1">
-                {loading ? '...' : systemStats.activeSchedules}
+                {loading ? "..." : systemStats.activeSchedules}
               </div>
               <div className="text-gray-600">Lịch trình</div>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-xl">
               <div className="text-2xl font-bold text-orange-600 mb-1">
-                {loading ? '...' : systemStats.activeAlerts}
+                {loading ? "..." : systemStats.activeAlerts}
               </div>
               <div className="text-gray-600">Cảnh báo</div>
             </div>
@@ -209,7 +230,9 @@ export default function HomeScreen() {
                   </div>
                 </div>
                 <div className="text-gray-600 mb-2">{stat.label}</div>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {stat.value}
+                </div>
               </div>
             );
           })}

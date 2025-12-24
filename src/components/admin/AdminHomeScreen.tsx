@@ -165,14 +165,13 @@ export default function AdminHomeScreen() {
     if (diffHours < 24) return `${diffHours} giờ trước`;
     return `${diffDays} ngày trước`;
   };
-
   return (
     <div className="h-full">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-semibold leading-tight">Quản trị hệ thống</h1>
+            <h1 className="text-lg font-semibold leading-[44px]">Quản trị hệ thống</h1>
           </div>
           <button
             onClick={handleRefresh}
@@ -298,7 +297,7 @@ export default function AdminHomeScreen() {
                 value:
                   loading || stats.light === undefined || stats.light === null
                     ? "..."
-                    : `${Math.round(Number(stats.light))}%`,
+                    : `${Number(stats.light).toFixed(1)}%`,
                 icon: Sun,
                 color: "yellow",
               },

@@ -1,12 +1,11 @@
 declare namespace JSX {
-  // Basic JSX types to satisfy TSX compilation in this project setup
-  // These are permissive (any) to avoid build errors; consider installing
-  // `@types/react` and enabling proper JSX libs for stricter typing.
   type Element = any;
   type ElementClass = any;
   interface ElementAttributesProperty {
-    // use `props` property on components
     props: any;
+  }
+  interface ElementChildrenAttribute {
+    children: any;
   }
   interface IntrinsicAttributes {
     [key: string]: any;
@@ -17,7 +16,29 @@ declare namespace JSX {
   interface IntrinsicElements {
     [elemName: string]: any;
   }
-  interface Fragment {
-    [key: string]: any;
+}
+
+// Fix for recharts components
+declare module "recharts" {
+  export class XAxis extends React.Component<any, any> {
+    props: any;
+  }
+  export class YAxis extends React.Component<any, any> {
+    props: any;
+  }
+  export class Tooltip extends React.Component<any, any> {
+    props: any;
+  }
+  export class Line extends React.Component<any, any> {
+    props: any;
+  }
+  export class LineChart extends React.Component<any, any> {
+    props: any;
+  }
+  export class CartesianGrid extends React.Component<any, any> {
+    props: any;
+  }
+  export class ResponsiveContainer extends React.Component<any, any> {
+    props: any;
   }
 }
