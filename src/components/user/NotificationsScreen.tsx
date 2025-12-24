@@ -121,9 +121,9 @@ export default function NotificationsScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900">Thông báo</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-tight">Thông báo</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -179,7 +179,7 @@ export default function NotificationsScreen() {
               <p className="text-gray-500 text-lg">Không có thông báo nào</p>
             </div>
           ) : (
-              filteredNotifications.map((notification) => {
+            filteredNotifications.map((notification) => {
                const config = getLevelConfig(notification.severity || 'info');
               const Icon = config.icon;
               return (

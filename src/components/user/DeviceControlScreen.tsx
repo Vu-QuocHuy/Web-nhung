@@ -34,30 +34,30 @@ const DEVICE_CONFIG: Record<string, DeviceConfigEntry> = {
     id: "pump",
     name: "pump",
     displayName: "Bơm nước",
-    icon: Droplets,
+      icon: Droplets,
     color: "blue",
-  },
+    },
   fan: {
     id: "fan",
     name: "fan",
     displayName: "Quạt",
-    icon: Fan,
+      icon: Fan,
     color: "cyan",
-  },
+    },
   light: {
     id: "light",
     name: "light",
     displayName: "Đèn (Tất cả)",
-    icon: Lightbulb,
+      icon: Lightbulb,
     color: "yellow",
-  },
+    },
   servo_door: {
     id: "servo_door",
     name: "servo_door",
     displayName: "Cửa (Servo)",
     icon: RotateCcw,
     color: "purple",
-  },
+    },
   servo_feed: {
     id: "servo_feed",
     name: "servo_feed",
@@ -71,14 +71,14 @@ const DEVICE_CONFIG: Record<string, DeviceConfigEntry> = {
     displayName: "Đèn trồng cây",
     icon: Zap,
     color: "green",
-  },
+    },
   led_animal: {
     id: "led_animal",
     name: "led_animal",
     displayName: "Đèn khu vật nuôi",
     icon: Zap,
     color: "orange",
-  },
+    },
   led_hallway: {
     id: "led_hallway",
     name: "led_hallway",
@@ -173,7 +173,7 @@ export default function DeviceControlScreen() {
       toast.error(
         "Không thể điều khiển thiết bị: " +
           (error.response?.data?.message || error.message)
-      );
+    );
     }
   };
 
@@ -233,9 +233,9 @@ export default function DeviceControlScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900">Điều khiển thiết bị</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-tight">Điều khiển thiết bị</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -256,9 +256,9 @@ export default function DeviceControlScreen() {
             <div className="text-gray-600">Đang tải...</div>
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-6">
             {devices.map((device: Device) => {
-              const Icon = device.icon;
+            const Icon = device.icon;
               const isActive =
                 device.status === "ON" || device.status === "AUTO";
               const colors = getColorClasses(device.color, isActive);
@@ -268,35 +268,29 @@ export default function DeviceControlScreen() {
                   : device.status === "ON"
                   ? "bg-green-100 text-green-700"
                   : "bg-gray-100 text-gray-600";
-              return (
-                <div
-                  key={device.id}
+            return (
+              <div
+                key={device.id}
                   className={`bg-white rounded-xl shadow-sm border-2 ${colors.border} p-6 hover:shadow-md transition-all`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`${colors.bg} p-4 rounded-xl`}>
-                      <Icon className={`w-8 h-8 ${colors.icon}`} />
-                    </div>
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`${colors.bg} p-4 rounded-xl`}>
+                    <Icon className={`w-8 h-8 ${colors.icon}`} />
+                  </div>
                     <div className={`px-3 py-1 rounded-full text-xs font-medium ${statusClasses}`}>
                       {device.status === "AUTO"
                         ? "Tự động"
                         : device.status === "ON"
                         ? "Hoạt động"
                         : "Tắt"}
-                    </div>
                   </div>
+                </div>
 
-                  <div className="mb-4">
-                    <div className="text-gray-900 font-medium mb-1">
+                <div className="mb-4">
+                    <div className="text-gray-900 font-medium">
                       {device.displayName}
                     </div>
-                    <div className="text-gray-500 text-sm">
-                      ID: {device.name}
-                      <span className="block text-xs text-gray-400">
-                        Nhấn nút để chuyển: Bật → Tắt → Tự động
-                      </span>
-                    </div>
-                  </div>
+                </div>
 
                   <div className="grid grid-cols-3 gap-2">
                     <button
@@ -319,21 +313,21 @@ export default function DeviceControlScreen() {
                     >
                       Tắt
                     </button>
-                    <button
+                <button
                       onClick={() => setDeviceStatus(device, "AUTO")}
                       className={`py-2 rounded-lg font-medium transition-colors ${
                         device.status === "AUTO"
                           ? "bg-white border border-yellow-400 text-yellow-700"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
+                  }`}
+                >
                       Tự động
-                    </button>
+                </button>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
         )}
       </div>
     </div>

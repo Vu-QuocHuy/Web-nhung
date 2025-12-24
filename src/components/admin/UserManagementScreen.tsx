@@ -101,7 +101,7 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
     try {
       await authService.register(newUser);
       toast.success('Thêm người dùng thành công');
-      setShowAddDialog(false);
+    setShowAddDialog(false);
       setNewUser({ username: '', email: '', password: '' });
       fetchUsers(currentPage, searchQuery, roleFilter);
     } catch (error: any) {
@@ -119,8 +119,8 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
         address: selectedUser.address,
       });
       toast.success('Cập nhật người dùng thành công');
-      setShowEditDialog(false);
-      setSelectedUser(null);
+    setShowEditDialog(false);
+    setSelectedUser(null);
       fetchUsers(currentPage, searchQuery, roleFilter);
     } catch (error: any) {
       toast.error('Không thể cập nhật người dùng: ' + (error.response?.data?.message || error.message));
@@ -145,7 +145,7 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
         fetchUsers(currentPage, searchQuery, roleFilter);
       } catch (error: any) {
         toast.error('Không thể xóa người dùng: ' + (error.response?.data?.message || error.message));
-      }
+    }
     }
   };
 
@@ -157,11 +157,10 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 mb-1">Quản lý người dùng</h1>
-            <p className="text-gray-500">Thêm, sửa, xóa và quản lý tài khoản</p>
+            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Quản lý người dùng</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -172,13 +171,13 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>Làm mới</span>
             </button>
-            <button
-              onClick={() => setShowAddDialog(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Thêm người dùng</span>
-            </button>
+          <button
+            onClick={() => setShowAddDialog(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm người dùng</span>
+          </button>
           </div>
         </div>
       </div>
@@ -226,12 +225,12 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Tìm kiếm theo tên, email, số điện thoại..."
               />
             </div>
@@ -262,77 +261,77 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {users.map((user) => (
               <div key={user._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-gray-900 font-medium">{user.username}</h3>
-                      {user.role === 'admin' && (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
-                          Admin
-                        </span>
-                      )}
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full font-medium ${
-                          user.isActive
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {user.isActive ? 'Hoạt động' : 'Khóa'}
+                    {user.role === 'admin' && (
+                      <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                        Admin
                       </span>
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <div>📧 {user.email}</div>
+                    )}
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full font-medium ${
+                          user.isActive
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                        {user.isActive ? 'Hoạt động' : 'Khóa'}
+                    </span>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <div>📧 {user.email}</div>
                       {user.phone && <div>📱 {user.phone}</div>}
                       {user.address && <div>📍 {user.address}</div>}
-                    </div>
                   </div>
                 </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setShowEditDialog(true);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
-                  >
-                    <Edit className="w-4 h-4" />
-                    <span>Sửa</span>
-                  </button>
-                  <button
-                    onClick={() => toggleUserStatus(user._id)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
-                      user.isActive
-                        ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-                        : 'bg-green-50 text-green-600 hover:bg-green-100'
-                    }`}
-                  >
-                    {user.isActive ? (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        <span>Khóa</span>
-                      </>
-                    ) : (
-                      <>
-                        <Unlock className="w-4 h-4" />
-                        <span>Mở</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => deleteUser(user._id)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
-              ))}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setShowEditDialog(true);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Sửa</span>
+                </button>
+                <button
+                    onClick={() => toggleUserStatus(user._id)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+                      user.isActive
+                      ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                      : 'bg-green-50 text-green-600 hover:bg-green-100'
+                  }`}
+                >
+                    {user.isActive ? (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      <span>Khóa</span>
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="w-4 h-4" />
+                      <span>Mở</span>
+                    </>
+                  )}
+                </button>
+                <button
+                    onClick={() => deleteUser(user._id)}
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (

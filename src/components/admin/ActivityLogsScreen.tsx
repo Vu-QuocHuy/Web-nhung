@@ -17,9 +17,8 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
     try {
       setLoading(true);
       const params: any = { limit: 100 };
-      if (filterType !== 'all') {
-        params.action = filterType;
-      }
+      // Note: Backend supports filtering by specific action (e.g., 'register_user', 'control_device')
+      // but not by resource type. We'll filter by resourceType on client-side instead.
       const response = await activityLogService.getAll(params);
       // Ensure logs is an array
       setLogs(Array.isArray(response.data) ? response.data : []);
@@ -98,6 +97,17 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
 
   const filteredLogs = logs.filter((log) => {
     if (filterType === 'all') return true;
+    // Filter by resourceType if available, otherwise fallback to action-based filtering
+    if (log.resourceType) {
+      const resourceTypeMap: Record<string, string> = {
+        'user': 'user',
+        'device': 'device',
+        'threshold': 'threshold',
+        'schedule': 'schedule',
+      };
+      return resourceTypeMap[log.resourceType] === filterType;
+    }
+    // Fallback: filter by action pattern
     const logType = getLogType(log.action);
     return logType === filterType;
   });
@@ -135,11 +145,10 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-gray-900 mb-1">Lịch sử hoạt động</h1>
-            <p className="text-gray-500">Theo dõi tất cả các hoạt động trong hệ thống</p>
+        <div>
+            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Lịch sử hoạt động</h1>
           </div>
           <button
             onClick={handleRefresh}
@@ -255,52 +264,52 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
                   filteredLogs.map((log) => {
                     const logType = getLogType(log.action);
                     const TypeIcon = getTypeIcon(logType);
-                    return (
+                  return (
                       <tr key={log._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getTypeColor(logType)}`}>
-                            <TypeIcon className="w-4 h-4" />
+                          <TypeIcon className="w-4 h-4" />
                             {getTypeLabel(logType)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                           <div className="font-medium text-gray-900">
                             {log.userId && typeof log.userId === 'object' && 'username' in log.userId
                               ? (log.userId as any).username
                               : log.username || 'System'}
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
+                      </td>
+                      <td className="px-6 py-4">
                           <div className="text-gray-900">{getActionLabel(log.action)}</div>
-                        </td>
-                        <td className="px-6 py-4">
+                      </td>
+                      <td className="px-6 py-4">
                           <div className="text-gray-600">
                             {getResourceTypeLabel(log.resourceType)}
                             {log.resourceId && (
                               <span className="text-gray-400 ml-2">(ID: {log.resourceId})</span>
                             )}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-gray-600">
                             {formatTime(log.createdAt || log.timestamp || new Date().toISOString())}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {log.status === 'success' ? (
-                            <div className="inline-flex items-center gap-1 text-green-600">
-                              <CheckCircle className="w-5 h-5" />
-                              <span className="font-medium">Thành công</span>
-                            </div>
-                          ) : (
-                            <div className="inline-flex items-center gap-1 text-red-600">
-                              <XCircle className="w-5 h-5" />
-                              <span className="font-medium">Thất bại</span>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {log.status === 'success' ? (
+                          <div className="inline-flex items-center gap-1 text-green-600">
+                            <CheckCircle className="w-5 h-5" />
+                            <span className="font-medium">Thành công</span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 text-red-600">
+                            <XCircle className="w-5 h-5" />
+                            <span className="font-medium">Thất bại</span>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
                   })
                 )}
               </tbody>

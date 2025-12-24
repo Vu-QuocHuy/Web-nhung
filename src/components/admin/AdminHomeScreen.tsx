@@ -169,18 +169,15 @@ export default function AdminHomeScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-8 py-6 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="mb-2">Quản trị hệ thống</h1>
-            <p className="text-purple-100">
-              Cập nhật lúc: {stats.lastUpdate.toLocaleTimeString("vi-VN")}
-            </p>
+            <h1 className="text-lg font-semibold leading-tight">Quản trị hệ thống</h1>
           </div>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-6 py-3 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
           >
             <RefreshCw
               className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
@@ -301,7 +298,7 @@ export default function AdminHomeScreen() {
                 value:
                   loading || stats.light === undefined || stats.light === null
                     ? "..."
-                    : `${Math.round(Number(stats.light))} lux`,
+                    : `${Math.round(Number(stats.light))}%`,
                 icon: Sun,
                 color: "yellow",
               },

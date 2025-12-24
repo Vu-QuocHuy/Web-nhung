@@ -129,7 +129,7 @@ export default function HomeScreen() {
       label: 'Ánh sáng',
       value: loading || sensorData.light === undefined || sensorData.light === null
         ? '...'
-        : `${Math.round(Number(sensorData.light))} lux`,
+        : `${Math.round(Number(sensorData.light))}%`,
       icon: Sun,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-50',
@@ -139,10 +139,10 @@ export default function HomeScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 mb-1">Trang chủ</h1>
+            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Trang chủ</h1>
             <p className="text-gray-500">
               Cập nhật lúc: {sensorData.lastUpdate.toLocaleTimeString('vi-VN')}
             </p>

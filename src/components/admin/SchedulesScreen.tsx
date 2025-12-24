@@ -100,16 +100,16 @@ export default function SchedulesScreen() {
 
     try {
       await scheduleService.create({
-        name: newSchedule.name,
+      name: newSchedule.name,
         deviceName: newSchedule.deviceName,
         action: newSchedule.action,
         startTime: newSchedule.startTime,
         endTime: newSchedule.endTime,
         daysOfWeek: newSchedule.daysOfWeek,
-        enabled: true,
+      enabled: true,
       });
       toast.success('Thêm lịch trình thành công');
-      setShowAddDialog(false);
+    setShowAddDialog(false);
       setNewSchedule({
         name: '',
         deviceName: 'pump',
@@ -138,8 +138,8 @@ export default function SchedulesScreen() {
         enabled: selectedSchedule.enabled,
       });
       toast.success('Cập nhật lịch trình thành công');
-      setShowEditDialog(false);
-      setSelectedSchedule(null);
+    setShowEditDialog(false);
+    setSelectedSchedule(null);
       fetchSchedules();
     } catch (error: any) {
       toast.error('Không thể cập nhật lịch trình: ' + (error.response?.data?.message || error.message));
@@ -194,11 +194,10 @@ export default function SchedulesScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-gray-900 mb-1">Quản lý lịch trình</h1>
-            <p className="text-gray-500">Tạo và quản lý lịch tự động cho thiết bị</p>
+            <h1 className="text-gray-900 text-lg font-semibold leading-tight">Quản lý lịch trình</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -209,13 +208,13 @@ export default function SchedulesScreen() {
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>Làm mới</span>
             </button>
-            <button
-              onClick={() => setShowAddDialog(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Thêm lịch trình</span>
-            </button>
+          <button
+            onClick={() => setShowAddDialog(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm lịch trình</span>
+          </button>
           </div>
         </div>
       </div>
@@ -238,92 +237,92 @@ export default function SchedulesScreen() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {schedules.map((schedule) => (
-              <div
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {schedules.map((schedule) => (
+            <div
                 key={schedule._id}
-                className={`bg-white rounded-xl shadow-sm border-2 p-6 ${
-                  schedule.enabled ? 'border-purple-200' : 'border-gray-200'
-                }`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-gray-900 font-medium mb-1">{schedule.name}</h3>
+              className={`bg-white rounded-xl shadow-sm border-2 p-6 ${
+                schedule.enabled ? 'border-purple-200' : 'border-gray-200'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-gray-900 font-medium mb-1">{schedule.name}</h3>
                     <p className="text-gray-600 text-sm">{DEVICE_NAMES[schedule.deviceName] || schedule.deviceName}</p>
-                  </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      schedule.enabled
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {schedule.enabled ? 'Hoạt động' : 'Tắt'}
-                  </div>
                 </div>
+                <div
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    schedule.enabled
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {schedule.enabled ? 'Hoạt động' : 'Tắt'}
+                </div>
+              </div>
 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Clock className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <div className="text-xs text-gray-500">Thời gian</div>
+              <div className="space-y-3 mb-4">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Clock className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <div className="text-xs text-gray-500">Thời gian</div>
                       <div className="text-gray-900 font-medium">
                         {schedule.startTime} - {schedule.endTime}
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-5 h-5 text-purple-600" />
-                      <div className="text-xs text-gray-500">Ngày trong tuần</div>
-                    </div>
-                    <div className="flex gap-1 flex-wrap">
-                      {daysOfWeek.map((day) => (
-                        <span
-                          key={day.id}
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            schedule.daysOfWeek.includes(day.id)
-                              ? 'bg-purple-100 text-purple-700'
-                              : 'bg-gray-200 text-gray-500'
-                          }`}
-                        >
-                          {day.label}
-                        </span>
-                      ))}
-                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => toggleSchedule(schedule._id)}
-                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors ${
-                      schedule.enabled
-                        ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-                        : 'bg-green-50 text-green-600 hover:bg-green-100'
-                    }`}
-                  >
-                    {schedule.enabled ? 'Tắt' : 'Bật'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedSchedule(schedule);
-                      setShowEditDialog(true);
-                    }}
-                    className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => deleteSchedule(schedule._id)}
-                    className="flex items-center justify-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="w-5 h-5 text-purple-600" />
+                    <div className="text-xs text-gray-500">Ngày trong tuần</div>
+                  </div>
+                  <div className="flex gap-1 flex-wrap">
+                    {daysOfWeek.map((day) => (
+                      <span
+                        key={day.id}
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                            schedule.daysOfWeek.includes(day.id)
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-gray-200 text-gray-500'
+                        }`}
+                      >
+                        {day.label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
+
+              <div className="flex gap-2">
+                <button
+                    onClick={() => toggleSchedule(schedule._id)}
+                  className={`flex-1 py-2 px-3 rounded-lg font-medium transition-colors ${
+                    schedule.enabled
+                      ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                      : 'bg-green-50 text-green-600 hover:bg-green-100'
+                  }`}
+                >
+                  {schedule.enabled ? 'Tắt' : 'Bật'}
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedSchedule(schedule);
+                    setShowEditDialog(true);
+                  }}
+                  className="flex items-center justify-center gap-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button
+                    onClick={() => deleteSchedule(schedule._id)}
+                  className="flex items-center justify-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
           </div>
         )}
       </div>
@@ -386,8 +385,8 @@ export default function SchedulesScreen() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">Thời gian bắt đầu</label>
-                  <input
-                    type="time"
+                <input
+                  type="time"
                     value={newSchedule.startTime}
                     onChange={(e) =>
                       setNewSchedule({ ...newSchedule, startTime: e.target.value })
@@ -403,8 +402,8 @@ export default function SchedulesScreen() {
                     onChange={(e) =>
                       setNewSchedule({ ...newSchedule, endTime: e.target.value })
                     }
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
                 </div>
               </div>
 

@@ -31,7 +31,7 @@ export default function HistoryScreen() {
     { id: 'humidity', label: 'Độ ẩm KK', icon: Droplets, unit: '%', color: '#3b82f6' },
     { id: 'soilMoisture', label: 'Độ ẩm đất', icon: Sprout, unit: '%', color: '#22c55e' },
     { id: 'waterLevel', label: 'Mực nước', icon: Waves, unit: 'cm', color: '#06b6d4' },
-    { id: 'light', label: 'Ánh sáng', icon: Sun, unit: 'lux', color: '#eab308' },
+    { id: 'light', label: 'Ánh sáng', icon: Sun, unit: '%', color: '#eab308' },
   ];
 
   const fetchHistory = async () => {
@@ -54,8 +54,8 @@ export default function HistoryScreen() {
           timeLabel = `${date.getDate()}/${date.getMonth() + 1}`;
         } else {
           timeLabel = `${date.getDate()}/${date.getMonth() + 1}`;
-        }
-
+      }
+      
         return {
           time: timeLabel,
           value: typeof point.value === 'number' 
@@ -94,9 +94,9 @@ export default function HistoryScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900">Lịch sử dữ liệu</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-tight">Lịch sử dữ liệu</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -182,23 +182,23 @@ export default function HistoryScreen() {
               <div className="text-gray-500">Không có dữ liệu</div>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: number) => [`${value} ${currentSensor.unit}`, currentSensor.label]}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke={currentSensor.color}
-                  strokeWidth={3}
-                  dot={{ fill: currentSensor.color, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" />
+              <YAxis />
+              <Tooltip
+                formatter={(value: number) => [`${value} ${currentSensor.unit}`, currentSensor.label]}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={currentSensor.color}
+                strokeWidth={3}
+                dot={{ fill: currentSensor.color, r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
           )}
         </div>
 
@@ -232,7 +232,7 @@ export default function HistoryScreen() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-green-100 p-3 rounded-lg">
                 <BarChart3 className="w-6 h-6 text-green-600" />

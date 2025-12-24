@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw, Plus, X } from 'lucide-react';
 import { alertService, Alert } from '../../services/alert.service';
+import { userService, User } from '../../services/user.service';
 import { toast } from 'sonner';
 
 export default function AdminNotificationsScreen() {
@@ -13,12 +14,15 @@ export default function AdminNotificationsScreen() {
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [users, setUsers] = useState([] as User[]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [newAlert, setNewAlert] = useState({
     title: '',
     message: '',
     severity: 'info' as 'info' | 'warning' | 'critical',
     type: 'manual_notice',
     targetAll: true,
+    targetUsers: [] as string[],
     data: {},
   });
 
@@ -117,9 +121,32 @@ export default function AdminNotificationsScreen() {
     fetchAlerts();
   };
 
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const response = await userService.getAll({ limit: 100 });
+      setUsers(response.data);
+    } catch (error: any) {
+      console.error('Error fetching users:', error);
+      toast.error('Không thể tải danh sách người dùng');
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showCreateDialog) {
+      fetchUsers();
+    }
+  }, [showCreateDialog]);
+
   const handleCreate = async () => {
     if (!newAlert.title || !newAlert.message) {
       toast.error('Vui lòng nhập tiêu đề và nội dung');
+      return;
+    }
+    if (!newAlert.targetAll && newAlert.targetUsers.length === 0) {
+      toast.error('Vui lòng chọn ít nhất một người nhận');
       return;
     }
     try {
@@ -129,7 +156,8 @@ export default function AdminNotificationsScreen() {
         message: newAlert.message,
         severity: newAlert.severity,
         type: newAlert.type,
-        targetAll: true,
+        targetAll: newAlert.targetAll,
+        targetUsers: newAlert.targetAll ? [] : newAlert.targetUsers,
         data: newAlert.data || {},
       });
       toast.success('Đã tạo thông báo');
@@ -140,6 +168,7 @@ export default function AdminNotificationsScreen() {
         severity: 'info',
         type: 'manual_notice',
         targetAll: true,
+        targetUsers: [],
         data: {},
       });
       fetchAlerts();
@@ -148,6 +177,15 @@ export default function AdminNotificationsScreen() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    setNewAlert((prev) => ({
+      ...prev,
+      targetUsers: prev.targetUsers.includes(userId)
+        ? prev.targetUsers.filter((id) => id !== userId)
+        : [...prev.targetUsers, userId],
+    }));
   };
 
   const getLevelConfig = (severity: string) => {
@@ -180,13 +218,13 @@ export default function AdminNotificationsScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900">Thông báo (Admin)</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-tight">Thông báo (Admin)</h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
           >
             <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
             <span>Làm mới</span>
@@ -271,19 +309,19 @@ export default function AdminNotificationsScreen() {
           ) : (
               filteredNotifications.map((notification) => {
                const config = getLevelConfig(notification.severity || 'info');
-              const Icon = config.icon;
-              return (
-                <div
+            const Icon = config.icon;
+            return (
+              <div
                   key={notification._id}
                   className={`bg-white rounded-xl shadow-sm border-l-4 ${config.border} border-t border-r border-b border-gray-200 overflow-hidden hover:shadow-md transition-shadow`}
-                >
-                  <div className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className={`${config.bg} p-3 rounded-xl`}>
-                        <Icon className={`w-6 h-6 ${config.color}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-4 mb-2">
+              >
+                <div className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`${config.bg} p-3 rounded-xl`}>
+                      <Icon className={`w-6 h-6 ${config.color}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4 mb-2">
                           <div className="flex items-center gap-3">
                             <h3 className="text-gray-900 font-medium text-lg">
                               {notification.title || notification.message || config.label}
@@ -298,23 +336,23 @@ export default function AdminNotificationsScreen() {
                               {notification.status === 'resolved' ? 'Đã xử lý' : 'Chưa xử lý'}
                             </span>
                           </div>
-                          <span className="text-sm text-gray-500 whitespace-nowrap">
+                        <span className="text-sm text-gray-500 whitespace-nowrap">
                             {formatTime(notification)}
-                          </span>
-                        </div>
-                        <p className="text-gray-600 mb-3">
+                        </span>
+                      </div>
+                      <p className="text-gray-600 mb-3">
                           {formatMessage(notification.message)}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-xs px-3 py-1 rounded-full font-medium ${
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs px-3 py-1 rounded-full font-medium ${
                               (notification.severity || 'info') === 'critical'
-                                ? 'bg-red-100 text-red-700'
+                              ? 'bg-red-100 text-red-700'
                                 : (notification.severity || 'info') === 'warning'
-                                ? 'bg-orange-100 text-orange-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}
-                          >
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}
+                        >
                             {config.label}
                           </span>
                           {notification.status === 'active' && (
@@ -331,12 +369,12 @@ export default function AdminNotificationsScreen() {
                           >
                             Xóa
                           </button>
-                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              );
+              </div>
+            );
             })
           )}
         </div>
@@ -425,6 +463,68 @@ export default function AdminNotificationsScreen() {
                       {item.label}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium">Người nhận</label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      id="targetAll"
+                      checked={newAlert.targetAll}
+                      onChange={() => setNewAlert({ ...newAlert, targetAll: true, targetUsers: [] })}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <label htmlFor="targetAll" className="text-gray-700 cursor-pointer">
+                      Gửi cho tất cả người dùng
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      id="targetSpecific"
+                      checked={!newAlert.targetAll}
+                      onChange={() => setNewAlert({ ...newAlert, targetAll: false })}
+                      className="w-4 h-4 text-purple-600"
+                    />
+                    <label htmlFor="targetSpecific" className="text-gray-700 cursor-pointer">
+                      Chọn người dùng cụ thể
+                    </label>
+                  </div>
+                  {!newAlert.targetAll && (
+                    <div className="ml-7 mt-2 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      {loadingUsers ? (
+                        <div className="text-gray-500 text-sm">Đang tải danh sách người dùng...</div>
+                      ) : users.length === 0 ? (
+                        <div className="text-gray-500 text-sm">Không có người dùng nào</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {users.map((user) => (
+                            <div key={user._id} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id={`user-${user._id}`}
+                                checked={newAlert.targetUsers.includes(user._id)}
+                                onChange={() => toggleUserSelection(user._id)}
+                                className="w-4 h-4 text-purple-600 rounded"
+                              />
+                              <label
+                                htmlFor={`user-${user._id}`}
+                                className="text-sm text-gray-700 cursor-pointer flex-1"
+                              >
+                                {user.username} ({user.email})
+                                {user.role === 'admin' && (
+                                  <span className="ml-2 text-xs text-purple-600">(Admin)</span>
+                                )}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
