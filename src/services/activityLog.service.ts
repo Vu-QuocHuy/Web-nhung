@@ -9,6 +9,7 @@ export interface ActivityLog {
   target?: string;
   resourceType?: string;
   resourceId?: string;
+  resourceName?: string;
   status: 'success' | 'failed';
   timestamp?: string;
   createdAt?: string;

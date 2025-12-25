@@ -86,6 +86,50 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
     return resourceType ? (resourceTypeMap[resourceType] || resourceType) : '-';
   };
 
+  const getResourceName = (log: ActivityLog): string => {
+    // Ưu tiên sử dụng resourceName từ backend
+    if (log.resourceName) {
+      return log.resourceName;
+    }
+
+    // Fallback: lấy từ details
+    const details = log.details;
+    if (!details) {
+      return log.resourceId || '-';
+    }
+
+    // Lấy tên từ details dựa trên resourceType
+    switch (log.resourceType) {
+      case 'user':
+        // User có thể có username hoặc email trong details
+        if (details.username) return details.username;
+        if (details.email) return details.email;
+        break;
+      case 'schedule':
+        // Schedule có name trong details
+        if (details.name) return details.name;
+        break;
+      case 'device':
+        // Device có deviceName trong details
+        if (details.deviceName) return details.deviceName;
+        break;
+      case 'threshold':
+        // Threshold có sensorType trong details
+        if (details.sensorType) {
+          const sensorTypeMap: Record<string, string> = {
+            'temperature': 'Nhiệt độ',
+            'soil_moisture': 'Độ ẩm đất',
+            'light': 'Ánh sáng',
+          };
+          return sensorTypeMap[details.sensorType] || details.sensorType;
+        }
+        break;
+    }
+
+    // Nếu không tìm thấy tên trong details, trả về resourceId
+    return log.resourceId || '-';
+  };
+
   const getLogType = (action: string): 'user' | 'device' | 'threshold' | 'schedule' => {
     const lowerAction = action.toLowerCase();
     if (lowerAction.includes('user')) return 'user';
@@ -278,10 +322,10 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
                       </td>
                       <td className="px-6 py-4">
                           <div className="text-gray-600">
-                            {getResourceTypeLabel(log.resourceType)}
-                            {log.resourceId && (
-                              <span className="text-gray-400 ml-2">(ID: {log.resourceId})</span>
-                            )}
+                            <div className="font-medium">{getResourceName(log)}</div>
+                            <div className="text-sm text-gray-400 mt-1">
+                              {getResourceTypeLabel(log.resourceType)}
+                            </div>
                           </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
