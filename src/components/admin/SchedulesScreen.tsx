@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Clock, Calendar, X, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Clock, Calendar, X } from 'lucide-react';
 import { scheduleService, Schedule } from '../../services/schedule.service';
 import { toast } from 'sonner';
 
@@ -200,14 +200,6 @@ export default function SchedulesScreen() {
             <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Quản lý lịch trình</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
-            >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-              <span>Làm mới</span>
-            </button>
             <button
               onClick={() => setShowAddDialog(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"

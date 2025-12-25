@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, AlertTriangle, Info, Filter, RefreshCw, Plus, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Filter, Plus, X } from 'lucide-react';
 import { alertService, Alert } from '../../services/alert.service';
 import { userService, User } from '../../services/user.service';
 import { toast } from 'sonner';
@@ -219,17 +219,7 @@ export default function AdminNotificationsScreen() {
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Thông báo (Admin)</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
-          >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>Làm mới</span>
-          </button>
-        </div>
+        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Thông báo (Admin)</h1>
       </div>
 
       {/* Content */}
