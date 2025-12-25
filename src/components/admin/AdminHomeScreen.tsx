@@ -171,7 +171,9 @@ export default function AdminHomeScreen() {
       <div className="bg-white text-gray-900 px-6 py-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-semibold leading-[44px]">Quản trị hệ thống</h1>
+            <h1 className="text-lg font-semibold leading-[44px]">
+              Quản trị hệ thống
+            </h1>
           </div>
           <button
             onClick={handleRefresh}
@@ -188,58 +190,50 @@ export default function AdminHomeScreen() {
 
       {/* Content */}
       <div className="p-8 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            {/* System Stats */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Activity className="w-6 h-6 text-purple-600" />
-                <h2 className="text-gray-900">Thống kê hệ thống</h2>
+        {/* System Stats */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <Activity className="w-6 h-6 text-purple-600" />
+            <h2 className="text-gray-900">Thống kê hệ thống</h2>
+          </div>
+          <div className="grid grid-cols-5 gap-4">
+            <div className="text-center p-6 bg-blue-50 rounded-xl hover:shadow-md transition-shadow">
+              <Users className="w-10 h-10 text-blue-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {loading ? "..." : stats.totalUsers}
               </div>
-              <div className="grid grid-cols-5 gap-4">
-                <div className="text-center p-6 bg-blue-50 rounded-xl hover:shadow-md transition-shadow">
-                  <Users className="w-10 h-10 text-blue-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {loading ? "..." : stats.totalUsers}
-                  </div>
-                  <div className="text-gray-600 font-medium">Người dùng</div>
-                </div>
-                <div className="text-center p-6 bg-purple-50 rounded-xl hover:shadow-md transition-shadow">
-                  <Shield className="w-10 h-10 text-purple-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {loading ? "..." : stats.totalAdmins}
-                  </div>
-                  <div className="text-gray-600 font-medium">Quản trị viên</div>
-                </div>
-                <div className="text-center p-6 bg-orange-50 rounded-xl hover:shadow-md transition-shadow">
-                  <AlertTriangle className="w-10 h-10 text-orange-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-orange-600 mb-2">
-                    {loading ? "..." : stats.activeAlerts}
-                  </div>
-                  <div className="text-gray-600 font-medium">Cảnh báo</div>
-                </div>
-                <div className="text-center p-6 bg-green-50 rounded-xl hover:shadow-md transition-shadow">
-                  <Calendar className="w-10 h-10 text-green-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {loading ? "..." : stats.activeSchedules}
-                  </div>
-                  <div className="text-gray-600 font-medium">Lịch trình</div>
-                </div>
-                <div className="text-center p-6 bg-cyan-50 rounded-xl hover:shadow-md transition-shadow">
-                  <Activity className="w-10 h-10 text-cyan-600 mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-cyan-600 mb-2">
-                    {loading ? "..." : `${stats.devicesOnline}/8`}
-                  </div>
-                  <div className="text-gray-600 font-medium">
-                    Thiết bị online
-                  </div>
-                </div>
+              <div className="text-gray-600 font-medium">Người dùng</div>
+            </div>
+            <div className="text-center p-6 bg-purple-50 rounded-xl hover:shadow-md transition-shadow">
+              <Shield className="w-10 h-10 text-purple-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {loading ? "..." : stats.totalAdmins}
+              </div>
+              <div className="text-gray-600 font-medium">Quản trị viên</div>
+            </div>
+            <div className="text-center p-6 bg-orange-50 rounded-xl hover:shadow-md transition-shadow">
+              <AlertTriangle className="w-10 h-10 text-orange-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                {loading ? "..." : stats.activeAlerts}
+              </div>
+              <div className="text-gray-600 font-medium">Cảnh báo</div>
+            </div>
+            <div className="text-center p-6 bg-green-50 rounded-xl hover:shadow-md transition-shadow">
+              <Calendar className="w-10 h-10 text-green-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {loading ? "..." : stats.activeSchedules}
+              </div>
+              <div className="text-gray-600 font-medium">Lịch trình</div>
+            </div>
+            <div className="text-center p-6 bg-cyan-50 rounded-xl hover:shadow-md transition-shadow">
+              <Activity className="w-10 h-10 text-cyan-600 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-cyan-600 mb-2">
+                {loading ? "..." : `${stats.devicesOnline}/8`}
+              </div>
+              <div className="text-gray-600 font-medium">
+                Thiết bị đang hoạt động
               </div>
             </div>
-          </div>
-
-          <div className="md:col-span-1">
-            <ESP32StatusCard />
           </div>
         </div>
 
@@ -330,6 +324,8 @@ export default function AdminHomeScreen() {
             })}
           </div>
         </div>
+
+        <ESP32StatusCard />
       </div>
     </div>
   );

@@ -103,7 +103,7 @@ export default function ESP32StatusCard() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              ESP32 Status
+              Trạng thái kết nối với nông trại
             </h3>
             <p className="text-sm text-gray-500">{status.deviceId}</p>
           </div>

@@ -34,30 +34,30 @@ const DEVICE_CONFIG: Record<string, DeviceConfigEntry> = {
     id: "pump",
     name: "pump",
     displayName: "Bơm nước",
-      icon: Droplets,
+    icon: Droplets,
     color: "blue",
-    },
+  },
   fan: {
     id: "fan",
     name: "fan",
     displayName: "Quạt",
-      icon: Fan,
+    icon: Fan,
     color: "cyan",
-    },
+  },
   light: {
     id: "light",
     name: "light",
     displayName: "Đèn (Tất cả)",
-      icon: Lightbulb,
+    icon: Lightbulb,
     color: "yellow",
-    },
+  },
   servo_door: {
     id: "servo_door",
     name: "servo_door",
-    displayName: "Cửa (Servo)",
+    displayName: "Cửa ra vào (Servo)",
     icon: RotateCcw,
     color: "purple",
-    },
+  },
   servo_feed: {
     id: "servo_feed",
     name: "servo_feed",
@@ -71,14 +71,14 @@ const DEVICE_CONFIG: Record<string, DeviceConfigEntry> = {
     displayName: "Đèn trồng cây",
     icon: Zap,
     color: "green",
-    },
+  },
   led_animal: {
     id: "led_animal",
     name: "led_animal",
     displayName: "Đèn khu vật nuôi",
     icon: Zap,
     color: "orange",
-    },
+  },
   led_hallway: {
     id: "led_hallway",
     name: "led_hallway",
@@ -92,6 +92,7 @@ export default function DeviceControlScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [devices, setDevices] = useState([] as Device[]);
+  const [pendingIds, setPendingIds] = useState<Record<string, boolean>>({});
 
   const fetchDeviceStatus = async () => {
     try {
@@ -138,6 +139,15 @@ export default function DeviceControlScreen() {
 
   useEffect(() => {
     fetchDeviceStatus();
+
+    // Luôn kiểm tra trạng thái để UI hiển thị đúng
+    const intervalId = window.setInterval(() => {
+      fetchDeviceStatus();
+    }, 10000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -146,19 +156,40 @@ export default function DeviceControlScreen() {
     fetchDeviceStatus();
   };
 
-  const setDeviceStatus = async (device: Device, targetStatus: DeviceStatus) => {
+  const setDeviceStatus = async (
+    device: Device,
+    targetStatus: DeviceStatus
+  ) => {
     try {
-      await deviceService.controlDevice({
-        deviceName: device.name as any,
-        action: targetStatus,
-        value: 0,
-      });
+      setPendingIds((prev) => ({ ...prev, [device.id]: true }));
 
-      setDevices((prev: Device[]) =>
-        prev.map((d: Device) =>
-          d.id === device.id ? { ...d, status: targetStatus } : d
-        )
-      );
+      // "Đèn (Tất cả)" phải điều khiển từng đèn thành phần.
+      if (device.name === "light") {
+        const targets: Array<DeviceConfigEntry["name"]> = [
+          "led_farm",
+          "led_animal",
+          "led_hallway",
+        ];
+
+        await Promise.all(
+          targets.map((deviceName) =>
+            deviceService.controlDevice({
+              deviceName: deviceName as any,
+              action: targetStatus,
+              value: 0,
+            })
+          )
+        );
+      } else {
+        await deviceService.controlDevice({
+          deviceName: device.name as any,
+          action: targetStatus,
+          value: 0,
+        });
+      }
+
+      // Luôn lấy lại trạng thái thật từ backend để hiển thị đúng.
+      await fetchDeviceStatus();
 
       const actionLabel =
         targetStatus === "ON"
@@ -173,7 +204,50 @@ export default function DeviceControlScreen() {
       toast.error(
         "Không thể điều khiển thiết bị: " +
           (error.response?.data?.message || error.message)
-    );
+      );
+    } finally {
+      setPendingIds((prev) => {
+        const next = { ...prev };
+        delete next[device.id];
+        return next;
+      });
+    }
+  };
+
+  const runServoAction = async (device: Device) => {
+    try {
+      setPendingIds((prev) => ({ ...prev, [device.id]: true }));
+
+      // Servo là "action": chỉ cần gửi lệnh để chạy 1 chu kỳ.
+      await deviceService.controlDevice({
+        deviceName: device.name as any,
+        action: "ON",
+        value: 0,
+      });
+
+      // Thời gian chu kỳ (ước lượng theo firmware):
+      // - Mở cửa: ~1s + 2s + 1s + 2s = ~6s
+      // - Cho ăn: ~1s + 2s + 1s = ~4s
+      const waitMs = device.name === "servo_door" ? 6500 : 4500;
+      await new Promise((r) => setTimeout(r, waitMs));
+
+      await fetchDeviceStatus();
+
+      toast.success(
+        device.name === "servo_door" ? "Đã mở cửa xong" : "Đã cho ăn xong"
+      );
+    } catch (error: any) {
+      console.error("Error running servo action:", error);
+      toast.error(
+        "Không thể thực hiện: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setPendingIds((prev) => {
+        const next = { ...prev };
+        delete next[device.id];
+        return next;
+      });
     }
   };
 
@@ -235,7 +309,9 @@ export default function DeviceControlScreen() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Điều khiển thiết bị</h1>
+          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+            Điều khiển thiết bị
+          </h1>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -256,78 +332,132 @@ export default function DeviceControlScreen() {
             <div className="text-gray-600">Đang tải...</div>
           </div>
         ) : (
-        <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-4 gap-6">
             {devices.map((device: Device) => {
-            const Icon = device.icon;
+              const Icon = device.icon;
+              const isServo =
+                device.name === "servo_door" || device.name === "servo_feed";
+              const isRunning = isServo && !!pendingIds[device.id];
+              const effectiveStatus: DeviceStatus = device.status;
+
               const isActive =
-                device.status === "ON" || device.status === "AUTO";
+                effectiveStatus === "ON" || effectiveStatus === "AUTO";
               const colors = getColorClasses(device.color, isActive);
-              const statusClasses =
-                device.status === "AUTO"
-                  ? "bg-yellow-100 text-gray-800 border border-yellow-300"
-                  : device.status === "ON"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-600";
-            return (
-              <div
-                key={device.id}
+              const statusClasses = isRunning
+                ? "bg-yellow-100 text-gray-800 border border-yellow-300"
+                : effectiveStatus === "AUTO"
+                ? "bg-yellow-100 text-gray-800 border border-yellow-300"
+                : effectiveStatus === "ON"
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-600";
+              return (
+                <div
+                  key={device.id}
                   className={`bg-white rounded-xl shadow-sm border-2 ${colors.border} p-6 hover:shadow-md transition-all`}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`${colors.bg} p-4 rounded-xl`}>
-                    <Icon className={`w-8 h-8 ${colors.icon}`} />
-                  </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${statusClasses}`}>
-                      {device.status === "AUTO"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`${colors.bg} p-4 rounded-xl`}>
+                      <Icon className={`w-8 h-8 ${colors.icon}`} />
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${statusClasses}`}
+                    >
+                      {isServo
+                        ? isRunning
+                          ? "Đang thực hiện"
+                          : effectiveStatus === "AUTO"
+                          ? "Tự động"
+                          : "Sẵn sàng"
+                        : effectiveStatus === "AUTO"
                         ? "Tự động"
-                        : device.status === "ON"
+                        : effectiveStatus === "ON"
                         ? "Hoạt động"
                         : "Tắt"}
+                    </div>
                   </div>
-                </div>
 
-                <div className="mb-4">
+                  <div className="mb-4">
                     <div className="text-gray-900 font-medium">
                       {device.displayName}
                     </div>
-                </div>
-
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      onClick={() => setDeviceStatus(device, "ON")}
-                      className={`py-2 rounded-lg font-medium transition-colors ${
-                        device.status === "ON"
-                          ? "bg-green-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Bật
-                    </button>
-                    <button
-                      onClick={() => setDeviceStatus(device, "OFF")}
-                      className={`py-2 rounded-lg font-medium transition-colors ${
-                        device.status === "OFF"
-                          ? "bg-red-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      Tắt
-                    </button>
-                <button
-                      onClick={() => setDeviceStatus(device, "AUTO")}
-                      className={`py-2 rounded-lg font-medium transition-colors ${
-                        device.status === "AUTO"
-                          ? "bg-white border border-yellow-400 text-yellow-700"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                      Tự động
-                </button>
                   </div>
-              </div>
-            );
-          })}
-        </div>
+
+                  {isServo ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => runServoAction(device)}
+                        disabled={!!pendingIds[device.id]}
+                        className="col-span-3 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isRunning ? "Đang thực hiện..." : "Thực hiện"}
+                      </button>
+
+                      <button
+                        onClick={() =>
+                          setDeviceStatus(
+                            device,
+                            effectiveStatus === "AUTO" ? "OFF" : "AUTO"
+                          )
+                        }
+                        disabled={!!pendingIds[device.id]}
+                        className={`col-span-3 py-2 rounded-lg font-medium transition-colors ${
+                          effectiveStatus === "AUTO"
+                            ? "bg-white border border-yellow-400 text-yellow-700"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {effectiveStatus === "AUTO"
+                          ? "Tắt tự động"
+                          : "Bật tự động"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      <button
+                        onClick={() => setDeviceStatus(device, "ON")}
+                        disabled={
+                          !!pendingIds[device.id] || effectiveStatus === "ON"
+                        }
+                        className={`py-2 rounded-lg font-medium transition-colors ${
+                          effectiveStatus === "ON"
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        Bật
+                      </button>
+                      <button
+                        onClick={() => setDeviceStatus(device, "OFF")}
+                        disabled={
+                          !!pendingIds[device.id] || effectiveStatus === "OFF"
+                        }
+                        className={`py-2 rounded-lg font-medium transition-colors ${
+                          effectiveStatus === "OFF"
+                            ? "bg-red-600 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        Tắt
+                      </button>
+                      <button
+                        onClick={() => setDeviceStatus(device, "AUTO")}
+                        disabled={
+                          !!pendingIds[device.id] || effectiveStatus === "AUTO"
+                        }
+                        className={`py-2 rounded-lg font-medium transition-colors ${
+                          effectiveStatus === "AUTO"
+                            ? "bg-white border border-yellow-400 text-yellow-700"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        Tự động
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

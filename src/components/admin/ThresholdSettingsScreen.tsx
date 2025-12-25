@@ -13,10 +13,13 @@ import {
 import { thresholdService, Threshold } from "../../services/threshold.service";
 import { toast } from "sonner";
 
-const SENSOR_CONFIG: Record<string, { displayName: string; icon: any; unit: string }> = {
-  temperature: { displayName: 'Nhiệt độ', icon: Thermometer, unit: '°C' },
-  soil_moisture: { displayName: 'Độ ẩm đất', icon: Sprout, unit: '%' },
-  light: { displayName: 'Ánh sáng', icon: Sun, unit: '%' },
+const SENSOR_CONFIG: Record<
+  string,
+  { displayName: string; icon: any; unit: string }
+> = {
+  temperature: { displayName: "Nhiệt độ", icon: Thermometer, unit: "°C" },
+  soil_moisture: { displayName: "Độ ẩm đất", icon: Sprout, unit: "%" },
+  light: { displayName: "Ánh sáng", icon: Sun, unit: "%" },
 };
 
 interface ThresholdSettingsScreenProps {
@@ -117,7 +120,7 @@ export default function ThresholdSettingsScreen({
     const colors = {
       info: "bg-blue-100 text-blue-700",
       warning: "bg-orange-100 text-orange-700",
-      error: "bg-red-100 text-red-700",
+      critical: "bg-red-100 text-red-700",
     };
     return colors[severity as keyof typeof colors];
   };
@@ -126,7 +129,7 @@ export default function ThresholdSettingsScreen({
     const labels = {
       info: "Thông tin",
       warning: "Cảnh báo",
-      error: "Nghiêm trọng",
+      critical: "Nghiêm trọng",
     };
     return labels[severity as keyof typeof labels];
   };
@@ -145,9 +148,11 @@ export default function ThresholdSettingsScreen({
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
         <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Cài đặt ngưỡng</h1>
-            </div>
+          <div>
+            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+              Cài đặt ngưỡng
+            </h1>
+          </div>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -176,8 +181,8 @@ export default function ThresholdSettingsScreen({
             const config = SENSOR_CONFIG[threshold.sensorType];
             if (!config) return null;
             const Icon = config.icon;
-          return (
-            <div
+            return (
+              <div
                 key={threshold.sensorType}
                 className={`bg-white rounded-xl shadow-sm border-2 ${
                   threshold.isActive ? "border-green-200" : "border-gray-200"
@@ -271,7 +276,7 @@ export default function ThresholdSettingsScreen({
                   </button>
                 </div>
               </div>
-          );
+            );
           })
         )}
       </div>
@@ -297,11 +302,20 @@ export default function ThresholdSettingsScreen({
                 </label>
                 <input
                   type="number"
-                  value={selectedThreshold.thresholdValue}
+                  value={
+                    Number.isFinite(selectedThreshold.thresholdValue)
+                      ? selectedThreshold.thresholdValue
+                      : ""
+                  }
                   onChange={(e) =>
                     setSelectedThreshold({
                       ...selectedThreshold,
-                      thresholdValue: parseFloat(e.target.value),
+                      thresholdValue:
+                        e.target.value === ""
+                          ? 0
+                          : Number.isFinite(parseFloat(e.target.value))
+                          ? parseFloat(e.target.value)
+                          : 0,
                     })
                   }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
