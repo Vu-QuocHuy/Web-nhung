@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Filter, CheckCircle, XCircle, User, Settings, Zap, RefreshCw } from 'lucide-react';
+import { Filter, CheckCircle, XCircle, User, Settings, Zap } from 'lucide-react';
 import { activityLogService, ActivityLog } from '../../services/activityLog.service';
 import { toast } from 'sonner';
 
@@ -152,14 +152,6 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
               Lịch sử hoạt động
             </h1>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50"
-          >
-            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>Làm mới</span>
-          </button>
         </div>
       </div>
 

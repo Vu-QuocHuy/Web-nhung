@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {
-  RefreshCw,
   Thermometer,
   Droplets,
   Sprout,
@@ -137,19 +136,7 @@ export default function HistoryScreen() {
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Lịch sử dữ liệu</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-            <span>Làm mới</span>
-          </button>
-        </div>
+        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Lịch sử dữ liệu</h1>
       </div>
 
       {/* Content */}

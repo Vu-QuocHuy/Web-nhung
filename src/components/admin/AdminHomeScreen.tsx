@@ -9,7 +9,6 @@ import {
   Shield,
   AlertTriangle,
   Calendar,
-  RefreshCw,
   Activity,
 } from "lucide-react";
 import { sensorService } from "../../services/sensor.service";
@@ -185,6 +184,8 @@ export default function AdminHomeScreen() {
             />
             <span>Làm mới</span>
           </button>
+        <div>
+          <h1 className="text-lg font-semibold leading-[44px]">Quản trị hệ thống</h1>
         </div>
       </div>
 

@@ -7,7 +7,6 @@ import {
   Waves,
   Edit,
   Trash2,
-  RefreshCw,
   X,
 } from "lucide-react";
 import { thresholdService, Threshold } from "../../services/threshold.service";
@@ -29,7 +28,6 @@ interface ThresholdSettingsScreenProps {
 export default function ThresholdSettingsScreen({
   onBack,
 }: ThresholdSettingsScreenProps) {
-  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedThreshold, setSelectedThreshold] = useState<Threshold | null>(
@@ -50,18 +48,12 @@ export default function ThresholdSettingsScreen({
       );
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchThresholds();
   }, []);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchThresholds();
-  };
 
   const handleEditThreshold = async () => {
     if (!selectedThreshold) return;
@@ -147,22 +139,10 @@ export default function ThresholdSettingsScreen({
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
-              Cài đặt ngưỡng
-            </h1>
-          </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-          >
-            <RefreshCw
-              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-            <span>Làm mới</span>
-          </button>
+        <div>
+          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+            Cài đặt ngưỡng
+          </h1>
         </div>
       </div>
 
