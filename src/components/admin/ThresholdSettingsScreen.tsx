@@ -139,7 +139,7 @@ export default function ThresholdSettingsScreen({
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <div>
+        <div className="h-[44px] flex items-center">
           <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
             Cài đặt ngưỡng
           </h1>

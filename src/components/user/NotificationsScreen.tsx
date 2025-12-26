@@ -22,8 +22,8 @@ export default function NotificationsScreen() {
       setLoading(true);
       const params: any = { limit: 20, page };
       if (filterMode === 'status') {
-        if (filter === 'unresolved') {
-          params.status = 'active';
+      if (filter === 'unresolved') {
+        params.status = 'active';
         } else if (filter === 'resolved') {
           params.status = 'resolved';
         }
@@ -191,7 +191,9 @@ export default function NotificationsScreen() {
     <div className="h-full">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Thông báo</h1>
+        <div className="h-[44px] flex items-center">
+          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Thông báo</h1>
+        </div>
       </div>
 
       {/* Content */}

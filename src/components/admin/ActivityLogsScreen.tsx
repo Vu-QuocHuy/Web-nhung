@@ -86,6 +86,18 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
     return resourceType ? (resourceTypeMap[resourceType] || resourceType) : '-';
   };
 
+  // Mapping tên thiết bị sang tiếng Việt
+  const deviceNameMap: Record<string, string> = {
+    'pump': 'Bơm nước',
+    'fan': 'Quạt',
+    'light': 'Đèn (Tất cả)',
+    'servo_door': 'Cửa ra vào (Servo)',
+    'servo_feed': 'Cho ăn (Servo)',
+    'led_farm': 'Đèn trồng cây',
+    'led_animal': 'Đèn khu vật nuôi',
+    'led_hallway': 'Đèn hành lang'
+  };
+
   const getResourceName = (log: ActivityLog): string => {
     // Ưu tiên sử dụng resourceName từ backend
     if (log.resourceName) {
@@ -110,8 +122,10 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
         if (details.name) return details.name;
         break;
       case 'device':
-        // Device có deviceName trong details
-        if (details.deviceName) return details.deviceName;
+        // Device có deviceName trong details - map sang tiếng Việt
+        if (details.deviceName) {
+          return deviceNameMap[details.deviceName] || details.deviceName;
+        }
         break;
       case 'threshold':
         // Threshold có sensorType trong details
@@ -126,7 +140,10 @@ export default function ActivityLogsScreen({ onBack }: ActivityLogsScreenProps) 
         break;
     }
 
-    // Nếu không tìm thấy tên trong details, trả về resourceId
+    // Nếu không tìm thấy tên trong details, map resourceId nếu là device
+    if (log.resourceType === 'device' && log.resourceId) {
+      return deviceNameMap[log.resourceId] || log.resourceId;
+    }
     return log.resourceId || '-';
   };
 
