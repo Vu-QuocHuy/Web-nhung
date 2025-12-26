@@ -156,7 +156,7 @@ export default function HomeScreen() {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6">
+      <div className="bg-white border-b border-gray-200 px-6" style={{ paddingTop: '30px', paddingBottom: '30px' }}>
         <div className="h-[44px] flex items-center">
           <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
             Trang chủ
