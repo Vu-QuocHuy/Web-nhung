@@ -164,15 +164,25 @@ export default function DeviceControlScreen() {
           "led_hallway",
         ];
 
-        await Promise.all(
-          targets.map((deviceName) =>
-            deviceService.controlDevice({
-              deviceName: deviceName as any,
-              action: targetStatus,
-              value: 0,
-            })
-          )
+        const currentByName = new Map(
+          devices.map((d) => [d.name, d.status] as const)
         );
+
+        const toUpdate = targets.filter(
+          (deviceName) => currentByName.get(deviceName) !== targetStatus
+        );
+
+        if (toUpdate.length > 0) {
+          await Promise.all(
+            toUpdate.map((deviceName) =>
+              deviceService.controlDevice({
+                deviceName: deviceName as any,
+                action: targetStatus,
+                value: 0,
+              })
+            )
+          );
+        }
       } else {
         await deviceService.controlDevice({
           deviceName: device.name as any,
@@ -397,7 +407,8 @@ export default function DeviceControlScreen() {
                       <button
                         onClick={() => setDeviceStatus(device, "ON")}
                         disabled={
-                          !!pendingIds[device.id] || effectiveStatus === "ON"
+                          !!pendingIds[device.id] ||
+                          (device.name !== "light" && effectiveStatus === "ON")
                         }
                         className={`py-2 rounded-lg font-medium transition-colors ${
                           effectiveStatus === "ON"
@@ -410,7 +421,8 @@ export default function DeviceControlScreen() {
                       <button
                         onClick={() => setDeviceStatus(device, "OFF")}
                         disabled={
-                          !!pendingIds[device.id] || effectiveStatus === "OFF"
+                          !!pendingIds[device.id] ||
+                          (device.name !== "light" && effectiveStatus === "OFF")
                         }
                         className={`py-2 rounded-lg font-medium transition-colors ${
                           effectiveStatus === "OFF"
@@ -423,7 +435,9 @@ export default function DeviceControlScreen() {
                       <button
                         onClick={() => setDeviceStatus(device, "AUTO")}
                         disabled={
-                          !!pendingIds[device.id] || effectiveStatus === "AUTO"
+                          !!pendingIds[device.id] ||
+                          (device.name !== "light" &&
+                            effectiveStatus === "AUTO")
                         }
                         className={`py-2 rounded-lg font-medium transition-colors ${
                           effectiveStatus === "AUTO"

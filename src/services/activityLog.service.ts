@@ -1,15 +1,18 @@
-import apiClient from './api.client';
-import { API_ENDPOINTS } from '../config/api.config';
+import apiClient from "./api.client";
+import { API_ENDPOINTS } from "../config/api.config";
 
 export interface ActivityLog {
   _id: string;
-  userId: string | { _id: string; username?: string; email?: string; role?: string };
+  userId:
+    | string
+    | { _id: string; username?: string; email?: string; role?: string };
   username?: string;
   action: string;
   target?: string;
   resourceType?: string;
   resourceId?: string;
-  status: 'success' | 'failed';
+  resourceName?: string;
+  status: "success" | "failed";
   timestamp?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -19,7 +22,7 @@ export interface ActivityLog {
 export interface ActivityLogParams {
   userId?: string;
   action?: string;
-  status?: 'success' | 'failure';
+  status?: "success" | "failure";
   startDate?: string;
   endDate?: string;
   limit?: number;
@@ -27,11 +30,14 @@ export interface ActivityLogParams {
 }
 
 export const activityLogService = {
-  async getMyLogs(params?: { limit?: number; page?: number }): Promise<ActivityLog[]> {
-    const response = await apiClient.get<{ success: boolean; data: ActivityLog[] }>(
-      API_ENDPOINTS.ACTIVITY_LOGS.MY_LOGS,
-      { params }
-    );
+  async getMyLogs(params?: {
+    limit?: number;
+    page?: number;
+  }): Promise<ActivityLog[]> {
+    const response = await apiClient.get<{
+      success: boolean;
+      data: ActivityLog[];
+    }>(API_ENDPOINTS.ACTIVITY_LOGS.MY_LOGS, { params });
     return response.data.data;
   },
 
@@ -64,9 +70,13 @@ export const activityLogService = {
     };
   },
 
-  async getStats(params?: { startDate?: string; endDate?: string }): Promise<any> {
-    const response = await apiClient.get(API_ENDPOINTS.ACTIVITY_LOGS.STATS, { params });
+  async getStats(params?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<any> {
+    const response = await apiClient.get(API_ENDPOINTS.ACTIVITY_LOGS.STATS, {
+      params,
+    });
     return response.data;
   },
 };
-
