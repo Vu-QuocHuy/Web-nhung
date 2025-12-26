@@ -121,10 +121,12 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-8">
-        <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
-          Quản lý tài khoản cá nhân
-        </h1>
+      <div className="bg-white border-b border-gray-200 px-6" style={{ paddingTop: '30px', paddingBottom: '30px' }}>
+        <div className="h-[44px] flex items-center">
+          <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
+            Quản lý tài khoản cá nhân
+          </h1>
+        </div>
       </div>
 
       {/* Content */}
@@ -149,7 +151,7 @@ export default function ProfileScreen({ user, onLogout }: ProfileScreenProps) {
                 <span>Đổi mật khẩu</span>
               </button>
             </div>
-          </div>
+        </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
               <div className="bg-blue-100 p-3 rounded-lg">

@@ -31,6 +31,9 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
     username: '',
     email: '',
     password: '',
+    role: 'user' as 'admin' | 'user',
+    phone: '',
+    address: '',
   });
   const [users, setUsers] = useState<User[]>([]);
   const [pagination, setPagination] = useState({
@@ -94,15 +97,42 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
 
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.password) {
-      toast.error('Vui lòng nhập đầy đủ thông tin');
+      toast.error('Vui lòng nhập đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    if (newUser.username.length < 3) {
+      toast.error('Tên người dùng phải có ít nhất 3 ký tự');
+      return;
+    }
+
+    if (newUser.password.length < 6) {
+      toast.error('Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
 
     try {
-      await authService.register(newUser);
+      const registerData: any = {
+        username: newUser.username,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+      };
+
+      if (newUser.phone) registerData.phone = newUser.phone;
+      if (newUser.address) registerData.address = newUser.address;
+
+      await authService.register(registerData);
       toast.success('Thêm người dùng thành công');
     setShowAddDialog(false);
-      setNewUser({ username: '', email: '', password: '' });
+      setNewUser({ 
+        username: '', 
+        email: '', 
+        password: '',
+        role: 'user',
+        phone: '',
+        address: '',
+      });
       fetchUsers(currentPage, searchQuery, roleFilter);
     } catch (error: any) {
       toast.error('Không thể thêm người dùng: ' + (error.response?.data?.message || error.message));
@@ -157,19 +187,19 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6">
+      <div className="bg-white border-b border-gray-200 px-6" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="h-[44px] flex items-center">
             <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">Quản lý người dùng</h1>
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setShowAddDialog(true)}
+            onClick={() => setShowAddDialog(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Thêm người dùng</span>
-            </button>
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm người dùng</span>
+          </button>
           </div>
         </div>
       </div>
@@ -389,17 +419,21 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
 
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-700 mb-2">Tên người dùng</label>
+                <label className="block text-gray-700 mb-2">
+                  Tên người dùng <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={newUser.username}
                   onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Nhập tên người dùng"
+                  placeholder="Tối thiểu 3 ký tự"
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Email</label>
+                <label className="block text-gray-700 mb-2">
+                  Email <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="email"
                   value={newUser.email}
@@ -409,13 +443,46 @@ export default function UserManagementScreen({ onBack }: UserManagementScreenPro
                 />
               </div>
               <div>
-                <label className="block text-gray-700 mb-2">Mật khẩu</label>
+                <label className="block text-gray-700 mb-2">
+                  Mật khẩu <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="password"
                   value={newUser.password}
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  placeholder="Nhập mật khẩu"
+                  placeholder="Tối thiểu 6 ký tự"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-2">Vai trò</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as 'admin' | 'user' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="user">Người dùng</option>
+                  <option value="admin">Quản trị viên</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-2">Số điện thoại</label>
+                <input
+                  type="text"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="10 chữ số"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-2">Địa chỉ</label>
+                <textarea
+                  value={newUser.address}
+                  onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Địa chỉ của người dùng"
+                  rows={2}
                 />
               </div>
 

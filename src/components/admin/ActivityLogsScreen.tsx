@@ -103,50 +103,65 @@ export default function ActivityLogsScreen({
     return resourceType ? resourceTypeMap[resourceType] || resourceType : "-";
   };
 
-  const getObjectLabel = (log: ActivityLog): string => {
-    // Preferred: backend already enriches with resourceName
-    if (log.resourceName && String(log.resourceName).trim())
-      return String(log.resourceName);
+  // Mapping tên thiết bị sang tiếng Việt
+  const deviceNameMap: Record<string, string> = {
+    pump: "Bơm nước",
+    fan: "Quạt",
+    light: "Đèn (Tất cả)",
+    servo_door: "Cửa ra vào (Servo)",
+    servo_feed: "Cho ăn (Servo)",
+    led_farm: "Đèn trồng cây",
+    led_animal: "Đèn khu vật nuôi",
+    led_hallway: "Đèn hành lang",
+  };
 
-    // Fallback (older logs or different API shapes)
-    const deviceNameMap: Record<string, string> = {
-      pump: "Bơm nước",
-      fan: "Quạt",
-      light: "Đèn (Tất cả)",
-      servo_door: "Cửa ra vào (Servo)",
-      servo_feed: "Cho ăn (Servo)",
-      led_farm: "Đèn trồng cây",
-      led_animal: "Đèn khu vật nuôi",
-      led_hallway: "Đèn hành lang",
-    };
-    const sensorTypeMap: Record<string, string> = {
-      temperature: "Nhiệt độ",
-      soil_moisture: "Độ ẩm đất",
-      light: "Ánh sáng",
-      water_level: "Mực nước",
-    };
-
-    if (log.resourceType === "device") {
-      const key = log.details?.deviceName || log.resourceId;
-      if (key) return deviceNameMap[String(key)] || String(key);
+  const getResourceName = (log: ActivityLog): string => {
+    // Ưu tiên sử dụng resourceName từ backend
+    if (log.resourceName) {
+      return log.resourceName;
     }
 
-    if (log.resourceType === "threshold") {
-      const key = log.details?.sensorType || log.resourceId;
-      if (key) return sensorTypeMap[String(key)] || String(key);
+    // Fallback: lấy từ details
+    const details = log.details;
+    if (!details) {
+      return log.resourceId || "-";
     }
 
-    if (log.resourceType === "schedule") {
-      if (log.details?.name) return String(log.details.name);
-      if (log.resourceId) return String(log.resourceId);
+    // Lấy tên từ details dựa trên resourceType
+    switch (log.resourceType) {
+      case "user":
+        // User có thể có username hoặc email trong details
+        if (details.username) return details.username;
+        if (details.email) return details.email;
+        break;
+      case "schedule":
+        // Schedule có name trong details
+        if (details.name) return details.name;
+        break;
+      case "device":
+        // Device có deviceName trong details - map sang tiếng Việt
+        if (details.deviceName) {
+          return deviceNameMap[details.deviceName] || details.deviceName;
+        }
+        break;
+      case "threshold":
+        // Threshold có sensorType trong details
+        if (details.sensorType) {
+          const sensorTypeMap: Record<string, string> = {
+            temperature: "Nhiệt độ",
+            soil_moisture: "Độ ẩm đất",
+            light: "Ánh sáng",
+          };
+          return sensorTypeMap[details.sensorType] || details.sensorType;
+        }
+        break;
     }
 
-    if (log.resourceType === "user") {
-      if (log.details?.username) return String(log.details.username);
-      if (log.resourceId) return String(log.resourceId);
+    // Nếu không tìm thấy tên trong details, map resourceId nếu là device
+    if (log.resourceType === "device" && log.resourceId) {
+      return deviceNameMap[log.resourceId] || log.resourceId;
     }
-
-    return "-";
+    return log.resourceId || "-";
   };
 
   const getLogType = (
@@ -210,7 +225,10 @@ export default function ActivityLogsScreen({
   return (
     <div className="h-full">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6">
+      <div
+        className="bg-white border-b border-gray-200 px-6"
+        style={{ paddingTop: "30px", paddingBottom: "30px" }}
+      >
         <div className="flex items-center justify-between">
           <div className="h-[44px] flex items-center">
             <h1 className="text-gray-900 text-lg font-semibold leading-[44px]">
@@ -360,14 +378,12 @@ export default function ActivityLogsScreen({
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-gray-600">
-                            {getObjectLabel(log)}
-                            {!log.resourceName &&
-                              !log.details &&
-                              log.resourceId && (
-                                <span className="text-gray-400 ml-2">
-                                  (ID: {log.resourceId})
-                                </span>
-                              )}
+                            <div className="font-medium">
+                              {getResourceName(log)}
+                            </div>
+                            <div className="text-sm text-gray-400 mt-1">
+                              {getResourceTypeLabel(log.resourceType)}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

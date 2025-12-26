@@ -10,6 +10,9 @@ export interface RegisterData {
   username: string;
   email: string;
   password: string;
+  role?: 'admin' | 'user';
+  phone?: string;
+  address?: string;
 }
 
 export interface AuthResponse {
